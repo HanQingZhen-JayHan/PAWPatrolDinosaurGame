@@ -19,6 +19,7 @@ Build a PAW Patrol themed Chrome Dino-style endless runner game for kids (4-10 y
 | QR Scanner | `mobile_scanner` ^5.0.0 | Phone camera QR scanning |
 | State | `provider` ^6.1.0 | State management |
 | IDs | `uuid` ^4.0.0 | Player ID generation |
+| Sensors | `sensors_plus` ^5.0.0 | Phone accelerometer for tilt controls |
 
 **Platform routing**: Host mode requires `dart:io` (Windows/Android/iOS only). Web build defaults to controller mode since browsers can't run WebSocket servers.
 
@@ -40,13 +41,47 @@ Build a PAW Patrol themed Chrome Dino-style endless runner game for kids (4-10 y
 ### WebSocket Message Protocol (JSON)
 
 **Controller → Host:**
-- `join` { playerName } → `input` { action: jump/duck_start/duck_end } → `select_character` { character } → `ready` {}
+- `join` { playerName } — request to join session
+- `select_character` { character } — pick a pup
+- `ready` {} — mark ready in lobby
+- `input` { action: jump/duck_start/duck_end } — detected from body motion sensors
+- `request_start` {} — any controller can request game start (host auto-starts when ALL players ready)
+- `request_end` {} — any controller can request to end the game early
+- `leave` {} — disconnect gracefully
 
 **Host → Controller:**
-- `joined` { playerId } → `character_confirmed` { character } → `game_starting` { countdown } → `hit` { livesRemaining } → `eliminated` { finalScore } → `game_over` { scores }
+- `joined` { playerId } → `character_confirmed` { character }
+- `game_starting` { countdown } → `game_started` {}
+- `hit` { livesRemaining } → `eliminated` { finalScore }
+- `game_over` { rankings: [{ rank, playerId, character, score, isWinner }] }
 
 **Host → All (broadcast):**
-- `lobby_update` { players[] } → `score_update` { scores }
+- `lobby_update` { players[], allReady: bool } — includes ready state for auto-start
+- `score_update` { scores } — periodic during gameplay
+
+**Game Start Rules:**
+- **Auto-start**: Host starts automatically when ALL connected players are `ready`
+- **Manual start**: Any controller can send `request_start` to force start (requires ≥1 player ready)
+- Host shows 3-2-1-GO countdown before game begins
+
+**Game End Rules:**
+- **Auto-end**: Host ends the game when ≤1 player remains alive (last survivor wins)
+- **Manual end**: Any controller can send `request_end` to end the game early
+- On game end: host calculates final score ranking, announces the winner
+- If 1 player left: that player is the winner (last one standing)
+- If 0 players left (simultaneous elimination): highest score wins
+- If manual end: highest score at time of end wins
+
+**Game Over Screen (Host):**
+- Podium display: 1st/2nd/3rd place with character icons
+- Winner announcement with celebration animation + sound
+- Full ranking list: rank, character icon, player name, final score
+- "PLAY AGAIN" and "BACK TO LOBBY" options
+
+**Game Over Screen (Controller):**
+- Personal result: "You placed #N!" with score
+- Winner announcement: "Winner: [character name]!"
+- "PLAY AGAIN" button (sends `ready` to re-queue)
 
 ---
 
@@ -65,6 +100,10 @@ lib/
 │   ├── obstacle.dart                 # Obstacle type enum + dimensions
 │   ├── game_state.dart               # GameStateModel: phase, players, speed
 │   └── message.dart                  # GameMessage: type, payload, JSON codec
+├── sensor/
+│   ├── motion_detector.dart          # Core jump/duck detection from accelerometer
+│   ├── motion_calibrator.dart        # Per-kid baseline calibration
+│   └── motion_state.dart             # MotionState enum + transition logic
 ├── network/
 │   ├── game_server.dart              # shelf WebSocket server (host)
 │   ├── game_client.dart              # WebSocket client (controller)
@@ -79,7 +118,8 @@ lib/
 │   │   ├── obstacle_component.dart   # Obstacle sprite + movement
 │   │   ├── heart_indicator.dart      # Lives HUD per player
 │   │   ├── score_indicator.dart      # Score HUD per player
-│   │   └── game_over_overlay.dart    # Game over screen
+│   │   ├── game_over_overlay.dart    # Game over podium + rankings
+│   │   └── winner_celebration.dart  # Winner animation + effects
 │   ├── managers/
 │   │   ├── obstacle_manager.dart     # Spawning, difficulty scaling
 │   │   └── score_manager.dart        # Score tracking
@@ -91,8 +131,10 @@ lib/
 │   ├── host_lobby_screen.dart        # QR code + player list + start button
 │   ├── controller_join_screen.dart   # QR scanner / manual IP
 │   ├── character_select_screen.dart  # 8 pup grid selection
-│   ├── controller_screen.dart        # Big JUMP + DUCK buttons
-│   └── game_screen.dart              # Flame GameWidget + HUD overlays
+│   ├── controller_screen.dart        # Body motion detection + START/END
+│   ├── calibration_screen.dart       # Sensor calibration before game
+│   ├── game_over_result_screen.dart  # Controller: personal rank + winner
+│   └── game_screen.dart              # Flame GameWidget + HUD + podium overlay
 └── providers/
     ├── game_provider.dart            # Host: server + game state + Flame bridge
     ├── network_provider.dart         # Connection status tracking
@@ -105,11 +147,54 @@ lib/
 
 ### Player
 - 8 PAW Patrol characters: Chase, Marshall, Skye, Rubble, Rocky, Zuma, Everest, Tracker
-- 3 states: running (default), jumping (tap JUMP), ducking (hold DUCK)
+- 3 states: running (default), jumping (tilt/flick UP), ducking (tilt DOWN)
 - Jump physics: `velocityY = -600`, `gravity = 1800`, standard parabolic arc
 - No double-jump (simplicity for kids)
 - 3 lives (hearts), 1.5s invincibility after hit (sprite blinks)
 - Eliminated when all hearts lost; character fades out but others continue
+
+### Controller Input (Body-Mounted Phone)
+The phone is strapped to the kid's body (arm band, waist belt, or chest harness). The kid physically jumps and ducks to control their character.
+
+**Mounting positions supported:**
+- **Waist/belt** (recommended): phone in a belt pouch or clipped to waistband
+- **Arm band**: phone strapped to upper arm
+- **Chest harness**: phone in a chest pocket/holder
+- Player selects mount position during calibration so thresholds adapt
+
+**Motion detection via accelerometer + gyroscope (`sensors_plus`):**
+
+| Kid's action | Sensor signal | Detection logic |
+|---|---|---|
+| **Jump** | Sudden upward acceleration spike → brief freefall (near-zero g) → landing spike | Detect accel Y-axis spike > `jumpThreshold` followed by low-g window. Debounce 500ms to prevent double-trigger |
+| **Duck/Crouch** | Rapid downward movement + sustained lower position | Detect accel Y-axis drop + gyroscope forward tilt. Sustained low position = stay ducking. Return to standing = stop ducking |
+| **Standing (idle)** | Baseline steady-state accelerometer values | Character runs normally |
+
+**Detection algorithm (`motion_detector.dart`):**
+```
+1. Read accelerometer at 50Hz (every 20ms via sensors_plus userAccelerometerEvents)
+2. Apply low-pass filter to remove noise (moving average, window=5 samples)
+3. Compare filtered accel-Y against calibrated baseline:
+   - Spike > baseline + jumpThreshold → JUMP detected
+   - Drop < baseline - duckThreshold (sustained 200ms) → DUCK_START
+   - Return to baseline after duck → DUCK_END
+4. Debounce: ignore jump triggers for 500ms after last jump
+5. Send input messages to host only on state transitions
+```
+
+**Calibration flow (`calibration_screen.dart`):**
+1. Kid stands still for 3 seconds → record baseline accelerometer values
+2. Kid does 3 practice jumps → record jump acceleration peaks → set jumpThreshold to 60% of average peak
+3. Kid crouches once → record duck acceleration pattern → set duckThreshold
+4. Show "You're all set!" with a fun animation
+5. Store calibration per player session (not persisted)
+
+**Key design for kids:**
+- **Generous thresholds**: better to detect a small jump than miss a big one
+- **Visual feedback on host**: character briefly glows when input is detected, so kids can see cause-and-effect
+- **Audio feedback on phone**: short beep/vibrate on jump detection so kid knows it registered
+- **Fallback buttons**: small on-screen JUMP/DUCK buttons remain available at bottom of controller screen for accessibility or when sensors fail
+- **Safety**: controller screen shows "PAUSE" button; game auto-pauses if phone detects a fall (sudden high-g impact)
 
 ### Multi-Player Layout
 - 1 player: centered · 2-4 players: stacked lanes · 5-8: two rows, 0.75x scale
@@ -126,21 +211,40 @@ lib/
 - Score 500: air obstacles appear
 - Score 1000: simultaneous ground+air obstacles
 
-### Scoring
-- Continuous: `score += gameSpeed * dt * 0.1`
+### Scoring & Game End
+- Continuous: `score += gameSpeed * dt * 0.1` (only while player is alive)
 - Each player tracked independently
-- Game ends when ALL players eliminated
+- **Game ends when ≤1 player remains alive** (not when ALL eliminated)
+  - Last survivor is the winner
+  - If all eliminated simultaneously → highest score wins
+  - Tie-breaker: player who survived longer wins
+- Any controller can also end the game early via `request_end`
+- Final ranking: sorted by elimination order (last eliminated = highest rank), then by score
+- Winner gets celebration animation + trophy icon on podium
 
 ---
 
 ## Screen Flow
 
 ```
-Splash → Mode Select → ┬─ Host Lobby (QR + player list) → Game Screen (Flame + HUD)
-                        └─ Join (scan QR) → Character Select → Controller (JUMP/DUCK buttons)
-                                                                     ↓
-                                                              Game Over → Play Again / Lobby
+Splash → Mode Select
+  ├─ HOST: Lobby (QR + player list, auto-start when all ready)
+  │        → Game Screen (Flame + HUD)
+  │        → Game Over Podium (rankings + winner + play again)
+  │
+  └─ CONTROLLER: Join (scan QR) → Character Select → Calibration (strap phone, practice jumps)
+           → Ready → Controller Screen (motion detection active + START/END)
+           → Game Over Result (personal rank + winner + play again)
 ```
+
+### Game Lifecycle (detailed)
+1. **Lobby**: Players join via QR, select characters, mark ready
+2. **Auto-start**: When ALL players are `ready`, host begins 3-2-1 countdown
+3. **Manual start**: Any controller can press START to force-start (≥1 ready player required)
+4. **Playing**: Players jump/duck to survive, any controller can press END to stop early
+5. **Auto-end**: When ≤1 player alive, game ends automatically
+6. **Game Over**: Host shows podium with 1st/2nd/3rd + full ranking; controllers show personal result
+7. **Replay**: "Play Again" returns to lobby, "READY" re-queues
 
 ---
 
@@ -159,13 +263,20 @@ Splash → Mode Select → ┬─ Host Lobby (QR + player list) → Game Screen 
 - `message_protocol.dart` - message type constants
 - Integration test: server ↔ client message exchange
 
-### Phase 3: Screens & Navigation
+### Phase 3: Motion Detection & Calibration
+- `motion_detector.dart` — accelerometer stream, low-pass filter, jump/duck detection algorithm
+- `motion_calibrator.dart` — baseline recording, threshold calculation from practice jumps
+- `motion_state.dart` — state machine: standing → jumping → standing, standing → ducking → standing
+- `calibration_screen.dart` — guided calibration UX (stand still → jump 3x → crouch)
+- Unit tests: mock accelerometer data → verify correct jump/duck detection
+
+### Phase 4: Screens & Navigation
 - `main.dart` with platform detection, Provider setup
 - `app.dart` with routing and PAW Patrol theme
-- All 7 screens with basic UI (placeholder assets)
+- All screens with basic UI (placeholder assets), including calibration flow
 - Wire providers so controller join flow works end-to-end
 
-### Phase 4: Flame Game (Single Player First)
+### Phase 5: Flame Game (Single Player First)
 - `PawPatrolGame` FlameGame class
 - Ground + parallax background components
 - `PlayerComponent` with jump/duck physics and rectangle hitbox
@@ -173,21 +284,21 @@ Splash → Mode Select → ┬─ Host Lobby (QR + player list) → Game Screen 
 - Collision detection, HUD overlay (score + hearts)
 - Test with keyboard input (space=jump, down=duck)
 
-### Phase 5: Multiplayer Integration
+### Phase 6: Multiplayer Integration
 - Wire `GameProvider` to bridge WebSocket inputs → Flame game
 - Multi-player rendering with dynamic lane assignment
 - Per-player input routing, elimination, game over detection
 - Score broadcasting to controllers
 - Full lobby → game → game over → lobby cycle
 
-### Phase 6: Assets & Polish
+### Phase 7: Assets & Polish
 - Character sprites (run/jump/duck animations + icons for all 8 pups)
 - Obstacle sprites, parallax backgrounds (Adventure Bay theme)
 - UI assets (hearts, logo, buttons)
 - Sound effects via flame_audio
 - Screen shake on hit, countdown animation (3-2-1-GO)
 
-### Phase 7: Edge Cases & Hardening
+### Phase 8: Edge Cases & Hardening
 - Graceful disconnect handling (mid-game phone disconnect → remove player)
 - Host disconnect → controllers show error and return to join
 - Haptic feedback on controller phone
@@ -199,11 +310,12 @@ Splash → Mode Select → ┬─ Host Lobby (QR + player list) → Game Screen 
 
 ## Critical Files (in order of importance)
 
-1. **`lib/network/game_server.dart`** - WebSocket server enabling the entire host-controller architecture
-2. **`lib/game/paw_patrol_game.dart`** - Flame game root orchestrating all game components
-3. **`lib/game/components/player_component.dart`** - Jump physics, collision, animation states
-4. **`lib/models/message.dart`** - Host↔Controller protocol contract
-5. **`lib/providers/game_provider.dart`** - Bridge between network layer and Flame game
+1. **`lib/sensor/motion_detector.dart`** - Core jump/duck detection from body-mounted phone accelerometer
+2. **`lib/network/game_server.dart`** - WebSocket server enabling the entire host-controller architecture
+3. **`lib/game/paw_patrol_game.dart`** - Flame game root orchestrating all game components
+4. **`lib/game/components/player_component.dart`** - Jump physics, collision, animation states
+5. **`lib/models/message.dart`** - Host↔Controller protocol contract
+6. **`lib/providers/game_provider.dart`** - Bridge between network layer and Flame game
 
 ---
 
@@ -233,11 +345,22 @@ Note: PAW Patrol is copyrighted. For personal use, create original cartoon-puppy
 - Android phone scans QR and connects
 - iPhone scans QR and connects
 - Character selection works, taken characters greyed out
-- Game starts with countdown
-- JUMP/DUCK buttons on phone control character on host
+- Auto-start triggers when all players ready (3-2-1 countdown)
+- Manual start from controller works (≥1 ready)
+- Calibration flow completes: stand still → practice jumps → crouch
+- Kid physically jumps → character jumps on host screen
+- Kid physically ducks → character ducks on host screen
+- No false triggers while standing/walking normally
+- Fallback buttons work when sensors unavailable
+- Phone detects fall → game auto-pauses
 - Collision removes hearts, invincibility frames work
-- Player elimination + game over flow
-- "Play Again" returns to lobby
+- Game auto-ends when ≤1 player alive
+- Manual end from controller works mid-game
+- Podium shows correct 1st/2nd/3rd with character icons
+- Winner announcement with celebration animation
+- Full ranking list displays all players sorted correctly
+- Controller shows personal rank + winner info
+- "Play Again" returns to lobby correctly
 - Phone disconnect handled gracefully
 - 4+ players simultaneously without lag
 
