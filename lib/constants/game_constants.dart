@@ -1,9 +1,9 @@
 class GameConstants {
   GameConstants._();
 
-  // Player physics — snappier arcade-style jump
-  static const double jumpVelocity = -500.0;
-  static const double gravity = 2400.0;
+  // Player physics — high & far floaty jump
+  static const double jumpVelocity = -1400.0;
+  static const double gravity = 400.0;
   static const int maxLives = 5;
   static const double invincibilityDuration = 1.5;
   static const double blinkInterval = 0.1;
@@ -32,9 +32,9 @@ class GameConstants {
 
   // Layout
   static const double groundY = 0.75; // fraction of screen height
-  static const double playerWidth = 64.0;
-  static const double playerHeight = 64.0;
-  static const double duckHeight = 32.0;
+  static const double playerWidth = 120.0;
+  static const double playerHeight = 120.0;
+  static const double duckHeight = 60.0;
   static const int maxPlayers = 8;
 
   // Multi-player scaling

@@ -147,14 +147,24 @@ class PupDashGame extends FlameGame
         easyMode: _difficulty.isEasyMode);
     _obstacleManager.updateSpawnInterval(_difficulty.elapsed);
 
-    // Update scores for alive players
+    // Score: count obstacles that have passed each alive player
+    final obstacleList = children.whereType<ObstacleComponent>().toList();
     for (final entry in _playerComponents.entries) {
-      if (!entry.value.isEliminated) {
-        _scoreManager.updateScore(entry.key, speed, dt);
-        final score = _scoreManager.getScore(entry.key);
-        _scoreIndicators[entry.key]?.score = score;
-        gameProvider.updateScore(entry.key, score);
+      final player = entry.value;
+      if (player.isEliminated) continue;
+      final playerRightEdge = player.position.x + player.size.x;
+      for (final obstacle in obstacleList) {
+        final obstacleRightEdge = obstacle.position.x + obstacle.size.x;
+        // Obstacle has moved past the player without being hit
+        if (obstacleRightEdge < playerRightEdge &&
+            !obstacle.scoredBy.contains(entry.key)) {
+          obstacle.scoredBy.add(entry.key);
+          _scoreManager.incrementScore(entry.key, 1);
+        }
       }
+      final score = _scoreManager.getScore(entry.key);
+      _scoreIndicators[entry.key]?.score = score;
+      gameProvider.updateScore(entry.key, score);
     }
 
     // Collision detection: check obstacles against players

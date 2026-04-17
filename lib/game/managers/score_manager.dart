@@ -1,13 +1,11 @@
-import 'package:pup_dash/constants/game_constants.dart';
-
 class ScoreManager {
   final Map<String, double> _scores = {};
 
   double getScore(String playerId) => _scores[playerId] ?? 0;
 
-  void updateScore(String playerId, double gameSpeed, double dt) {
-    _scores[playerId] =
-        (_scores[playerId] ?? 0) + gameSpeed * dt * GameConstants.scoreMultiplier;
+  /// Add points to a player's score (e.g. +1 per obstacle crossed).
+  void incrementScore(String playerId, int amount) {
+    _scores[playerId] = (_scores[playerId] ?? 0) + amount;
   }
 
   void resetAll() {
@@ -20,7 +18,6 @@ class ScoreManager {
 
   Map<String, double> get allScores => Map.unmodifiable(_scores);
 
-  /// Returns the highest score among all tracked players.
   double get maxScore {
     if (_scores.isEmpty) return 0;
     return _scores.values.reduce((a, b) => a > b ? a : b);

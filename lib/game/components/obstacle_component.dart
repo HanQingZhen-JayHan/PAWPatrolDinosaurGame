@@ -10,6 +10,9 @@ class ObstacleComponent extends PositionComponent
   final ObstacleType type;
   double speed;
 
+  /// Player IDs that have already scored this obstacle (avoid double-counting).
+  final Set<String> scoredBy = <String>{};
+
   ObstacleComponent({
     required this.type,
     required this.speed,
