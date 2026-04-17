@@ -26,11 +26,26 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
   }
 
   Future<void> _connectManual() async {
-    final ip = _ipController.text.trim();
-    if (ip.isEmpty) return;
+    final input = _ipController.text.trim();
+    if (input.isEmpty) return;
 
-    final wsUrl = ip.startsWith('ws://') ? ip : 'ws://$ip/ws';
+    final wsUrl = _toWsUrl(input);
     await _connect(wsUrl);
+  }
+
+  /// Convert any input format to a ws:// URL:
+  ///   ws://host:port/ws  → as-is
+  ///   http://host:port   → ws://host:port/ws
+  ///   host:port          → ws://host:port/ws
+  String _toWsUrl(String input) {
+    if (input.startsWith('ws://')) return input;
+    if (input.startsWith('http://')) {
+      return '${input.replaceFirst('http://', 'ws://').replaceAll(RegExp(r'/+$'), '')}/ws';
+    }
+    if (input.startsWith('https://')) {
+      return '${input.replaceFirst('https://', 'wss://').replaceAll(RegExp(r'/+$'), '')}/ws';
+    }
+    return 'ws://$input/ws';
   }
 
   Future<void> _connect(String wsUrl) async {

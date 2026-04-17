@@ -80,6 +80,15 @@ class _SplashScreenState extends State<SplashScreen>
                         fontWeight: FontWeight.bold,
                       ),
                 ),
+                const SizedBox(height: 32),
+                const SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    color: PawTheme.goldStar,
+                    strokeWidth: 3,
+                  ),
+                ),
               ],
             ),
           ),

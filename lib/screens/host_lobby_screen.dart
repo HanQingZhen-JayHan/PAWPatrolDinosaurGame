@@ -61,7 +61,7 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
             }
 
             final players = provider.state.playerList;
-            final wsUrl = provider.wsUrl;
+            final httpUrl = provider.httpUrl;
 
             return Row(
               children: [
@@ -91,15 +91,21 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: QrImageView(
-                            data: wsUrl,
+                            data: httpUrl,
                             size: 200,
                           ),
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          wsUrl,
+                          httpUrl,
                           style: const TextStyle(
                               color: Colors.white70, fontSize: 12),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Manual: ${provider.serverIp}:${provider.serverPort}',
+                          style: const TextStyle(
+                              color: Colors.white38, fontSize: 10),
                         ),
                       ],
                     ),

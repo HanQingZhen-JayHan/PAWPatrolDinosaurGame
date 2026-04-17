@@ -34,18 +34,24 @@ class GameProvider extends ChangeNotifier {
   String? get serverIp => _server.ip;
   int? get serverPort => _server.port;
   String get wsUrl =>
-      NetworkUtils.buildWsUrl(_server.ip ?? 'localhost', _server.port ?? 8080);
+      NetworkUtils.buildWsUrl(_lanIp ?? 'localhost', _server.port ?? 8080);
+  String get httpUrl => 'http://${_lanIp ?? 'localhost'}:${_server.port ?? 8080}';
   bool get isRunning => _server.isRunning;
 
+  String? _lanIp;
+  String? get lanIp => _lanIp;
+
   Future<void> startServer() async {
-    final ip = await NetworkUtils.getLocalIpAddress() ?? 'localhost';
+    _lanIp = await NetworkUtils.getLocalIpAddress() ?? 'localhost';
     final port = await NetworkUtils.findAvailablePort();
 
     _server.onMessage = _handleMessage;
     _server.onClientConnected = _handleClientConnected;
     _server.onClientDisconnected = _handleClientDisconnected;
 
-    await _server.start(ip: ip, port: port);
+    // Bind to 0.0.0.0 so phones on the same WiFi can connect
+    _server.lanIp = _lanIp;
+    await _server.start(ip: '0.0.0.0', port: port);
     notifyListeners();
   }
 
