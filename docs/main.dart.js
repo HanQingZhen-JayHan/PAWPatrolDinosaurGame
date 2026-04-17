@@ -26100,7 +26100,7 @@ _.a=a
 _.b=b
 _.c=null
 _.d=0
-_.e=3
+_.e=5
 _.f=c
 _.r=!1
 _.w=null},
@@ -26135,7 +26135,7 @@ _.d=!1
 _.e=null
 _.f=0
 _.r=null
-_.w=3
+_.w=5
 _.x=!1
 _.y=c
 _.z=d
@@ -85060,7 +85060,7 @@ hZ(){var s=this.jd$
 return s==null?this.rs():s}}
 A.zp.prototype={
 lr(a){var s,r,q,p,o,n,m,l,k
-for(s=a.a.a,r=0;r<3;++r){q=$.W()
+for(s=a.a.a,r=0;r<5;++r){q=$.W()
 p=new A.hI(B.b5,B.aH,B.c3,B.cv,B.bt)
 p.r=(r<this.p1?B.fq:B.DE).gq()
 o=A.by(q.w)
@@ -85473,7 +85473,7 @@ q.kI(64)
 q.W()
 q=r.ax.d
 q.kI(r.RG)
-q.W()}for(s=p.dj,s=new A.cu(s,A.j(s).i("cu<1,2>")).gV(0);s.p();)s.d.b.p1=3
+q.W()}for(s=p.dj,s=new A.cu(s,A.j(s).i("cu<1,2>")).gV(0);s.p();)s.d.b.p1=5
 for(s=p.eN,s=new A.cv(s,s.r,s.e);s.p();)s.d.p1=0},
 agm(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2=this,a3=null,a4=a2.e4.b.b,a5=A.j(a4).i("am<2>")
 a4=A.V(new A.am(a4,a5),a5.i("p.E"))
@@ -85509,7 +85509,7 @@ g=k.e
 e=new Float32Array(2)
 c=new A.ax(e)
 e[1]=20
-e[0]=72
+e[0]=120
 e=A.nO()
 b=new A.hd(f,new Float32Array(2))
 b.fE(c)
@@ -86049,7 +86049,7 @@ if(J.rJ(m.y)){m.y=A.c([],t.H7)
 m.e=null}m.W()
 break
 case"game_started":m.x=!0
-m.w=3
+m.w=5
 m.y=A.c([],t.H7)
 m.e=null
 m.f=0
@@ -86200,7 +86200,7 @@ r=0
 for(;r<s;++r){q=o[r]
 if(q.r){q.f=B.kK
 q.d=0
-q.e=3}}o=p.f
+q.e=5}}o=p.f
 if(o!=null)o.$1(B.bX)
 o=p.a
 o.oE(A.a3(["phase","playing"],t.N,t.z))
@@ -86261,7 +86261,7 @@ o=p.length
 n=0
 for(;n<o;++n){m=p[n]
 m.d=0
-m.e=3
+m.e=5
 m.f=B.kK
 m.w=null}k.c=300
 k.d=0
@@ -86271,7 +86271,7 @@ r=l.a
 q=t.N
 p=t.z
 n=0
-for(;n<k.length;k.length===s||(0,A.z)(k),++n)r.mN(k[n].a,A.a3(["score",0,"lives",3,"alive",!0],q,p))
+for(;n<k.length;k.length===s||(0,A.z)(k),++n)r.mN(k[n].a,A.a3(["score",0,"lives",5,"alive",!0],q,p))
 l.p6()
 k=l.r
 if(k!=null)k.$0()
@@ -86905,8 +86905,8 @@ q=a.c
 p=q==null?m:q.c
 if(p==null){p=a.b
 if(p.length===0)p="Player"}p=A.c([new A.kE(q,24,m),B.le,A.bq(p,m,m,m,B.lp,m,m),B.zx],t.p)
-o=J.zK(3,t.l7)
-for(q=a.e,n=0;n<3;++n)o[n]=A.mM(B.og,n<q?B.fq:B.fA,m,18)
+o=J.zK(5,t.l7)
+for(q=a.e,n=0;n<5;++n)o[n]=A.mM(B.og,n<q?B.fq:B.fA,m,18)
 B.b.O(p,o)
 p.push(B.zx)
 p.push(A.bq(""+B.c.dR(a.d),m,m,m,B.lp,m,m))

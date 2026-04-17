@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/models/message.dart';
 import 'package:pup_dash/network/firebase_room_client.dart';
 import 'package:pup_dash/providers/network_provider.dart';
@@ -15,7 +16,7 @@ class ControllerProvider extends ChangeNotifier {
   int? _personalRank;
   double _personalScore = 0;
   String? _winnerName;
-  int _livesRemaining = 3;
+  int _livesRemaining = GameConstants.maxLives;
   bool _gameActive = false;
   List<Map<String, dynamic>> _rankings = [];
   List<Map<String, dynamic>> _lobbyPlayers = [];
@@ -115,7 +116,7 @@ class ControllerProvider extends ChangeNotifier {
 
       case MessageType.gameStarted:
         _gameActive = true;
-        _livesRemaining = 3;
+        _livesRemaining = GameConstants.maxLives;
         // Clear previous game results so controllers don't show stale data
         _rankings = [];
         _personalRank = null;
@@ -166,7 +167,7 @@ class ControllerProvider extends ChangeNotifier {
     _personalRank = null;
     _personalScore = 0;
     _winnerName = null;
-    _livesRemaining = 3;
+    _livesRemaining = GameConstants.maxLives;
     _gameActive = false;
     _rankings = [];
     _countdown = 0;

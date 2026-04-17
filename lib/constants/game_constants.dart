@@ -4,7 +4,7 @@ class GameConstants {
   // Player physics — snappier arcade-style jump
   static const double jumpVelocity = -500.0;
   static const double gravity = 2400.0;
-  static const int maxLives = 3;
+  static const int maxLives = 5;
   static const double invincibilityDuration = 1.5;
   static const double blinkInterval = 0.1;
 
