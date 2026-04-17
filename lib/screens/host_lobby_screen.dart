@@ -110,7 +110,7 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                           ),
                           child: QrImageView(
                               data: 'https://hanqingzhen-jayhan.github.io/PAWPatrolDinosaurGame/?room=$roomCode',
-                              size: 320),
+                              size: 400),
                         ),
                         const SizedBox(height: 12),
                         const Text(

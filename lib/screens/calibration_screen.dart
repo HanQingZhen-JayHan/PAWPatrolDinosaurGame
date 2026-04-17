@@ -1,8 +1,14 @@
+import 'dart:js_interop';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/sensor/motion_calibrator.dart';
 import 'package:pup_dash/screens/controller_screen.dart';
+
+@JS('requestMotionPermission')
+external JSPromise<JSBoolean> _jsRequestMotionPermission();
 
 class CalibrationScreen extends StatefulWidget {
   const CalibrationScreen({super.key});
@@ -16,6 +22,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
   CalibrationStep _step = CalibrationStep.idle;
   double _progress = 0;
   CalibrationResult? _result;
+  String? _sensorError;
 
   @override
   void initState() {
@@ -39,16 +46,38 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
     super.dispose();
   }
 
-  void _startCalibration() {
+  Future<void> _startCalibration() async {
+    // Request motion permission on web (required for iOS Safari)
+    if (kIsWeb) {
+      final granted = await _requestWebMotionPermission();
+      if (!granted) {
+        setState(() => _sensorError =
+            'Motion sensor permission denied.\nPlease allow motion access and try again.');
+        return;
+      }
+    }
+    setState(() => _sensorError = null);
     _calibrator.startCalibration();
   }
 
+  Future<bool> _requestWebMotionPermission() async {
+    try {
+      final result = await _jsRequestMotionPermission().toDart;
+      return result.toDart;
+    } catch (_) {
+      // If the JS function isn't available or errors, assume permission granted
+      return true;
+    }
+  }
+
   String get _instructionText => switch (_step) {
-        CalibrationStep.idle => 'Strap your phone to your body\nthen tap START',
-        CalibrationStep.standStill => 'Stand still...',
-        CalibrationStep.practiceJumps => 'JUMP! (${(_progress * 3).ceil()}/3)',
-        CalibrationStep.practiceDuck => 'Now CROUCH down!',
-        CalibrationStep.done => "You're all set! 🎉",
+        CalibrationStep.idle =>
+          'Hold your phone steady\nthen tap START',
+        CalibrationStep.standStill => 'Hold still...',
+        CalibrationStep.practiceJumps =>
+          'Shake phone UP! (${(_progress * 2).ceil()}/2)',
+        CalibrationStep.practiceDuck => 'Tilt phone DOWN!',
+        CalibrationStep.done => "You're all set!",
       };
 
   IconData get _instructionIcon => switch (_step) {
@@ -87,6 +116,19 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                       ),
                 ),
                 const SizedBox(height: 32),
+                if (_sensorError != null)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _sensorError!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                    ),
+                  ),
                 if (_step != CalibrationStep.idle &&
                     _step != CalibrationStep.done)
                   LinearProgressIndicator(
@@ -132,8 +174,8 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                   onPressed: () {
                     final defaultResult = CalibrationResult(
                       baselineY: 0,
-                      jumpThreshold: 5.0,
-                      duckThreshold: 2.0,
+                      jumpThreshold: 1.5,
+                      duckThreshold: 0.8,
                     );
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
