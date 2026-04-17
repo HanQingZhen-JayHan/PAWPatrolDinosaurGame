@@ -13,6 +13,7 @@ import 'package:pup_dash/game/components/score_indicator.dart';
 import 'package:pup_dash/game/managers/obstacle_manager.dart';
 import 'package:pup_dash/game/managers/score_manager.dart';
 import 'package:pup_dash/game/systems/difficulty_system.dart';
+import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/models/message.dart';
 import 'package:pup_dash/providers/game_provider.dart';
 
@@ -138,6 +139,11 @@ class PupDashGame extends FlameGame
   void update(double dt) {
     if (!_gameRunning) return;
     super.update(dt);
+
+    // Only run gameplay logic while the game is in the playing phase.
+    // After game over, obstacles still render (for visual continuity) but
+    // scores, collisions and difficulty freeze.
+    if (gameProvider.state.phase != GamePhase.playing) return;
 
     // Difficulty progression
     _difficulty.update(dt);
