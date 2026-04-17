@@ -32,13 +32,17 @@ class _GameOverResultScreenState extends State<GameOverResultScreen> {
   void _checkForNewGame() {
     if (_navigatedBack || !mounted) return;
     final c = _controllerProvider!;
-    // New game starting: either countdown in progress or gameplay active
-    if (c.countdown > 0 || c.gameActive) {
+    // A new game is starting only when rankings have been cleared
+    // AND a new countdown or gameplay has begun. This prevents false positives
+    // from stale state that might still have gameActive=true from the previous round.
+    final newGameStarted =
+        c.rankings.isEmpty && (c.countdown > 0 || c.gameActive);
+    if (newGameStarted) {
       _navigatedBack = true;
       final defaultCal = CalibrationResult(
         baselineY: 0,
-        jumpThreshold: 1.5,
-        duckThreshold: 0.8,
+        jumpThreshold: 2.0,
+        duckThreshold: 1.0,
       );
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
