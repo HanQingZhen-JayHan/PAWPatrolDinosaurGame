@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart' show KeyEventResult;
 import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/game/components/ground.dart';
 import 'package:pup_dash/game/components/heart_indicator.dart';
+import 'package:pup_dash/game/components/jump_zone_indicator.dart';
 import 'package:pup_dash/game/components/obstacle_component.dart';
 import 'package:pup_dash/game/components/parallax_background.dart';
 import 'package:pup_dash/game/components/player_component.dart';
@@ -48,6 +49,9 @@ class PupDashGame extends FlameGame
     // Obstacle manager
     _obstacleManager = ObstacleManager();
     add(_obstacleManager);
+
+    // Visual jump zone indicator (renders below players)
+    add(JumpZoneIndicator());
 
     // Wire up provider callbacks
     gameProvider.onPlayerInput = _handlePlayerInput;
