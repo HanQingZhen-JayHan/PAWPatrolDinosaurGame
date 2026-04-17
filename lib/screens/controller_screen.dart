@@ -20,6 +20,11 @@ class _ControllerScreenState extends State<ControllerScreen> {
   late final MotionDetector _detector;
   bool _motionActive = false;
   String _lastAction = '';
+  // Debug info
+  double _rawY = 0;
+  double _filteredY = 0;
+  double _deviation = 0;
+  bool _sensorReceiving = false;
 
   @override
   void initState() {
@@ -28,6 +33,14 @@ class _ControllerScreenState extends State<ControllerScreen> {
     _detector.onAction = (action) {
       context.read<ControllerProvider>().sendInput(action);
       setState(() => _lastAction = action);
+    };
+    _detector.onDebugSample = (rawY, filteredY, deviation) {
+      setState(() {
+        _rawY = rawY;
+        _filteredY = filteredY;
+        _deviation = deviation;
+        _sensorReceiving = true;
+      });
     };
   }
 
@@ -64,7 +77,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     // Status bar
@@ -73,7 +86,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                       children: [
                         Text(
                           controller.selectedCharacter?.emoji ?? '🐕',
-                          style: const TextStyle(fontSize: 40),
+                          style: const TextStyle(fontSize: 36),
                         ),
                         Column(
                           children: [
@@ -81,7 +94,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                               'Score: ${controller.personalScore.toInt()}',
                               style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 20,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold),
                             ),
                             Row(
@@ -92,7 +105,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                                   color: i < controller.livesRemaining
                                       ? PupTheme.heartRed
                                       : Colors.white24,
-                                  size: 24,
+                                  size: 20,
                                 ),
                               ),
                             ),
@@ -100,47 +113,89 @@ class _ControllerScreenState extends State<ControllerScreen> {
                         ),
                       ],
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 8),
 
-                    // Sensor status display
+                    // Sensor status
                     Icon(
                       _motionActive ? Icons.sensors : Icons.sensors_off,
-                      size: 80,
+                      size: 48,
                       color: _motionActive
-                          ? Colors.greenAccent
+                          ? (_sensorReceiving
+                              ? Colors.greenAccent
+                              : Colors.amber)
                           : Colors.white54,
                     ),
-                    const SizedBox(height: 12),
                     Text(
                       _motionActive
-                          ? 'Sensors active — move to play!'
-                          : 'Tap READY to start sensors',
+                          ? (_sensorReceiving
+                              ? 'Sensors active'
+                              : 'Waiting for sensor data...')
+                          : 'Tap READY to start',
                       style: TextStyle(
                         color: _motionActive
                             ? Colors.greenAccent
                             : Colors.white54,
-                        fontSize: 18,
+                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
 
-                    // Last detected action feedback
-                    if (_motionActive && _lastAction.isNotEmpty)
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
+                    // Debug panel — live sensor readings
+                    if (_motionActive)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black38,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            _DebugRow('Raw Y', _rawY),
+                            _DebugRow('Filtered Y', _filteredY),
+                            _DebugRow('Deviation', _deviation),
+                            _DebugRow('Jump thresh',
+                                widget.calibration.jumpThreshold),
+                            _DebugRow('Duck thresh',
+                                widget.calibration.duckThreshold),
+                            _DebugRow('Baseline',
+                                widget.calibration.baselineY),
+                            const SizedBox(height: 4),
+                            // Visual bar showing deviation vs thresholds
+                            SizedBox(
+                              height: 24,
+                              child: CustomPaint(
+                                size: const Size(double.infinity, 24),
+                                painter: _DeviationBarPainter(
+                                  deviation: _deviation,
+                                  jumpThreshold:
+                                      widget.calibration.jumpThreshold,
+                                  duckThreshold:
+                                      widget.calibration.duckThreshold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    const SizedBox(height: 12),
+
+                    // Last action feedback
+                    if (_lastAction.isNotEmpty)
+                      Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                            horizontal: 24, vertical: 10),
                         decoration: BoxDecoration(
                           color: _lastAction == 'jump'
-                              ? Colors.green.withValues(alpha: 0.6)
-                              : Colors.orange.withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(16),
+                              ? Colors.green.withValues(alpha: 0.7)
+                              : Colors.orange.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           _lastAction.toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: 28,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -148,7 +203,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
                     const Spacer(),
 
-                    // Ready / Start / End buttons
+                    // Ready / Start / End
                     if (!controller.isReady)
                       ElevatedButton(
                         onPressed: () {
@@ -172,7 +227,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                               '${controller.countdown}',
                               style: const TextStyle(
                                 color: PupTheme.goldStar,
-                                fontSize: 72,
+                                fontSize: 64,
                                 fontWeight: FontWeight.bold,
                               ),
                             )
@@ -193,10 +248,10 @@ class _ControllerScreenState extends State<ControllerScreen> {
                         onPressed: controller.requestEnd,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: PupTheme.primaryRed,
-                          minimumSize: const Size(double.infinity, 56),
+                          minimumSize: const Size(double.infinity, 48),
                         ),
                         child: const Text('END GAME',
-                            style: TextStyle(fontSize: 20)),
+                            style: TextStyle(fontSize: 18)),
                       ),
                   ],
                 ),
@@ -207,4 +262,103 @@ class _ControllerScreenState extends State<ControllerScreen> {
       ),
     );
   }
+}
+
+class _DebugRow extends StatelessWidget {
+  final String label;
+  final double value;
+  const _DebugRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 1),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: const TextStyle(color: Colors.white54, fontSize: 11)),
+          Text(value.toStringAsFixed(2),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontFamily: 'monospace')),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeviationBarPainter extends CustomPainter {
+  final double deviation;
+  final double jumpThreshold;
+  final double duckThreshold;
+
+  _DeviationBarPainter({
+    required this.deviation,
+    required this.jumpThreshold,
+    required this.duckThreshold,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.width / 2;
+    final maxRange = (jumpThreshold * 2).clamp(5.0, 30.0);
+    final scale = (size.width / 2) / maxRange;
+
+    // Background
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+          Offset.zero & size, const Radius.circular(4)),
+      Paint()..color = const Color(0x33FFFFFF),
+    );
+
+    // Jump threshold markers
+    final jumpX = jumpThreshold * scale;
+    canvas.drawLine(
+      Offset(center + jumpX, 0),
+      Offset(center + jumpX, size.height),
+      Paint()
+        ..color = const Color(0xFF00FF00)
+        ..strokeWidth = 1,
+    );
+    canvas.drawLine(
+      Offset(center - jumpX, 0),
+      Offset(center - jumpX, size.height),
+      Paint()
+        ..color = const Color(0xFF00FF00)
+        ..strokeWidth = 1,
+    );
+
+    // Duck threshold marker
+    final duckX = duckThreshold * scale;
+    canvas.drawLine(
+      Offset(center - duckX, 0),
+      Offset(center - duckX, size.height),
+      Paint()
+        ..color = const Color(0xFFFF8800)
+        ..strokeWidth = 1,
+    );
+
+    // Current deviation bar
+    final devX = (deviation * scale).clamp(-size.width / 2, size.width / 2);
+    final barColor = deviation.abs() > jumpThreshold
+        ? const Color(0xFF00FF00)
+        : deviation < -duckThreshold
+            ? const Color(0xFFFF8800)
+            : const Color(0xFFFFFFFF);
+    canvas.drawRect(
+      Rect.fromLTWH(
+        center,
+        4,
+        devX,
+        size.height - 8,
+      ),
+      Paint()..color = barColor,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _DeviationBarPainter old) =>
+      deviation != old.deviation;
 }

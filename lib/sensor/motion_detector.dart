@@ -16,6 +16,9 @@ class MotionDetector {
   /// Called when a game input action is detected.
   void Function(String action)? onAction;
 
+  /// Called each sample with debug info: (rawY, filteredY, deviation, threshold).
+  void Function(double rawY, double filteredY, double deviation)? onDebugSample;
+
   final Queue<double> _filterBuffer = Queue<double>();
   DateTime _lastJumpTime = DateTime.fromMillisecondsSinceEpoch(0);
   DateTime _duckStartTime = DateTime.fromMillisecondsSinceEpoch(0);
@@ -29,13 +32,14 @@ class MotionDetector {
     _stateManager.reset();
     _filterBuffer.clear();
 
-    _subscription = userAccelerometerEventStream(
+    // Use accelerometerEvents (includes gravity) for better web compatibility
+    _subscription = accelerometerEventStream(
       samplingPeriod: Duration(
           milliseconds: GameConstants.sensorSampleIntervalMs),
     ).listen(_processSample);
   }
 
-  void _processSample(UserAccelerometerEvent event) {
+  void _processSample(AccelerometerEvent event) {
     // Low-pass filter: moving average
     _filterBuffer.addLast(event.y);
     if (_filterBuffer.length > GameConstants.filterWindowSize) {
@@ -47,7 +51,9 @@ class MotionDetector {
     final deviation = filteredY - calibration.baselineY;
     final now = DateTime.now();
 
-    // Jump detection: spike above threshold
+    onDebugSample?.call(event.y, filteredY, deviation);
+
+    // Jump detection: any significant acceleration spike
     if (deviation.abs() > calibration.jumpThreshold &&
         _stateManager.state == MotionState.standing) {
       final timeSinceLastJump =
@@ -56,8 +62,8 @@ class MotionDetector {
         _lastJumpTime = now;
         if (_stateManager.transitionTo(MotionState.jumping)) {
           onAction?.call(InputAction.jump);
-          // Auto-return to standing after a short delay (jump arc)
-          Future.delayed(const Duration(milliseconds: 600), () {
+          // Auto-return to standing after a short delay
+          Future.delayed(const Duration(milliseconds: 500), () {
             _stateManager.transitionTo(MotionState.standing);
           });
         }
@@ -65,7 +71,7 @@ class MotionDetector {
       return;
     }
 
-    // Duck detection: sustained deviation below threshold
+    // Duck detection: sustained tilt/deviation
     if (deviation < -calibration.duckThreshold &&
         _stateManager.state == MotionState.standing) {
       if (!_inDuckCandidate) {
@@ -85,7 +91,7 @@ class MotionDetector {
 
     // Return from duck when back near baseline
     if (_stateManager.state == MotionState.ducking &&
-        deviation.abs() < calibration.duckThreshold * 0.5) {
+        deviation.abs() < calibration.duckThreshold * 0.7) {
       if (_stateManager.transitionTo(MotionState.standing)) {
         onAction?.call(InputAction.duckEnd);
       }

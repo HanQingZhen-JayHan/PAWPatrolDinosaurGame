@@ -43,13 +43,13 @@ class GameConstants {
   // Countdown
   static const int countdownSeconds = 3;
 
-  // Motion detection
+  // Motion detection — tuned for sensitivity (kids game, web+native)
   static const int sensorSampleRateHz = 50;
   static const int sensorSampleIntervalMs = 20;
-  static const int filterWindowSize = 5;
-  static const int jumpDebounceDurationMs = 500;
-  static const int duckSustainMs = 200;
-  static const double jumpThresholdFactor = 0.6;
-  static const double calibrationStandStillSeconds = 3.0;
-  static const int calibrationJumpCount = 3;
+  static const int filterWindowSize = 3; // smaller = more responsive
+  static const int jumpDebounceDurationMs = 300; // shorter debounce
+  static const int duckSustainMs = 100; // faster duck detection
+  static const double jumpThresholdFactor = 0.4; // more sensitive (was 0.6)
+  static const double calibrationStandStillSeconds = 2.0; // faster calibration
+  static const int calibrationJumpCount = 2; // fewer practice jumps
 }

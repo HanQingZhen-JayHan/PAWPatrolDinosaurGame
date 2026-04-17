@@ -40,7 +40,8 @@ class MotionCalibrator {
     final startTime = DateTime.now();
     double currentPeak = 0;
 
-    _subscription = userAccelerometerEventStream(
+    // Use accelerometerEvents (includes gravity) for better web compatibility
+    _subscription = accelerometerEventStream(
       samplingPeriod: Duration(
           milliseconds: GameConstants.sensorSampleIntervalMs),
     ).listen((event) {
@@ -66,8 +67,8 @@ class MotionCalibrator {
           final deviation = (event.y - baseline).abs();
           currentPeak = max(currentPeak, deviation);
 
-          // Detect a jump peak when acceleration returns near baseline after spike
-          if (currentPeak > 2.0 && deviation < 1.0) {
+          // Detect a jump peak — lowered threshold for sensitivity
+          if (currentPeak > 1.0 && deviation < 0.5) {
             _jumpPeaks.add(currentPeak);
             currentPeak = 0;
             final progress =
@@ -82,14 +83,13 @@ class MotionCalibrator {
 
         case CalibrationStep.practiceDuck:
           _duckSamples.add(event.y);
-          if (_duckSamples.length > 50) {
-            // ~1 second of data
+          if (_duckSamples.length > 30) {
             _step = CalibrationStep.done;
             _subscription?.cancel();
             _finish();
           } else {
             onProgress?.call(
-                _step, min(1.0, _duckSamples.length / 50));
+                _step, min(1.0, _duckSamples.length / 30));
           }
           break;
 
@@ -107,17 +107,17 @@ class MotionCalibrator {
   void _finish() {
     final baseline = _averageBaseline;
     final avgJumpPeak = _jumpPeaks.isEmpty
-        ? 8.0
+        ? 3.0 // lower default for sensitivity
         : _jumpPeaks.reduce((a, b) => a + b) / _jumpPeaks.length;
     final jumpThreshold = avgJumpPeak * GameConstants.jumpThresholdFactor;
 
-    // Duck threshold: difference from baseline during crouch
+    // Duck threshold
     final avgDuck = _duckSamples.isEmpty
-        ? 3.0
+        ? 1.5
         : (_duckSamples.reduce((a, b) => a + b) / _duckSamples.length -
                 baseline)
             .abs();
-    final duckThreshold = max(1.5, avgDuck * 0.5);
+    final duckThreshold = max(0.8, avgDuck * 0.4);
 
     final result = CalibrationResult(
       baselineY: baseline,
