@@ -328,7 +328,18 @@ class _PlayerHud extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 CharacterIcon(character: player.character, size: 24),
-                const SizedBox(width: 6),
+                const SizedBox(width: 8),
+                // Character name
+                Text(
+                  player.character?.displayName ??
+                      (player.name.isEmpty ? 'Player' : player.name),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: 10),
                 // Hearts
                 ...List.generate(
                   GameConstants.maxLives,
@@ -340,7 +351,8 @@ class _PlayerHud extends StatelessWidget {
                     size: 18,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
+                // Score
                 Text(
                   '${player.score.toInt()}',
                   style: const TextStyle(
@@ -351,22 +363,20 @@ class _PlayerHud extends StatelessWidget {
                 ),
                 if (!player.isAlive)
                   const Padding(
-                    padding: EdgeInsets.only(left: 6),
+                    padding: EdgeInsets.only(left: 8),
                     child: Text('OUT',
                         style: TextStyle(
                             color: Colors.redAccent,
                             fontSize: 11,
                             fontWeight: FontWeight.bold)),
                   ),
-                // Host kick button — small and unobtrusive
+                const SizedBox(width: 8),
+                // Host kick button
                 InkWell(
                   onTap: () =>
                       context.read<GameProvider>().kickPlayer(player.id),
-                  child: const Padding(
-                    padding: EdgeInsets.only(left: 6),
-                    child: Icon(Icons.close,
-                        color: Colors.white54, size: 16),
-                  ),
+                  child: const Icon(Icons.close,
+                      color: Colors.white54, size: 16),
                 ),
               ],
             ),
