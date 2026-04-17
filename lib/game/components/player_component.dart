@@ -128,18 +128,16 @@ class PlayerComponent extends PositionComponent
       return;
     }
 
-    // Jump physics — parabolic arc in both X (forward) and Y (up/down)
+    // Jump physics — forward motion persists so player gains ground by jumping
     if (!_isOnGround) {
       _velocityY += GameConstants.gravity * dt;
       position.y += _velocityY * dt;
-
-      // Forward motion during jump, decelerates then reverses
-      _velocityX -= GameConstants.jumpForwardGravity * dt;
+      // Constant forward velocity throughout jump (no deceleration) —
+      // player keeps all forward progress when they land.
       position.x += _velocityX * dt;
 
       if (position.y >= _groundY) {
         position.y = _groundY;
-        position.x = _baseX; // snap back to starting lane
         _velocityY = 0;
         _velocityX = 0;
         _isOnGround = true;
@@ -147,6 +145,18 @@ class PlayerComponent extends PositionComponent
           _animState = PlayerAnimState.running;
         }
       }
+    } else {
+      // On ground: drift backward if player isn't jumping
+      position.x -= GameConstants.backwardDriftSpeed * dt;
+    }
+
+    // Clamp horizontal position inside visible play area
+    final maxX =
+        game.size.x * GameConstants.maxPlayerXFactor - size.x;
+    if (position.x < GameConstants.minPlayerX) {
+      position.x = GameConstants.minPlayerX;
+    } else if (position.x > maxX) {
+      position.x = maxX;
     }
 
     // Invincibility

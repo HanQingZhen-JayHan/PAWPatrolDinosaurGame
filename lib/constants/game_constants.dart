@@ -4,18 +4,21 @@ class GameConstants {
   // Player physics — parabolic arc, peak ~2× character height
   static const double jumpVelocity = -640.0;
   static const double gravity = 850.0;
-  // Forward momentum during jump (arcs up & forward, returns on landing)
-  // Peak forward displacement ≈ jumpForwardVelocity²/(2*jumpForwardGravity)
-  // With 450/600, peak ≈ 170px (visible forward lean)
-  static const double jumpForwardVelocity = 450.0;
-  static const double jumpForwardGravity = 600.0;
+  // Forward momentum during jump — persists after landing so the player
+  // gains ground by jumping. If they don't jump, backwardDriftSpeed pulls
+  // them back each frame.
+  static const double jumpForwardVelocity = 300.0;
+  static const double backwardDriftSpeed = 70.0;
+  // Horizontal movement bounds (fraction of screen width)
+  static const double minPlayerX = 40.0;
+  static const double maxPlayerXFactor = 0.55;
   static const int maxLives = 5;
   static const double invincibilityDuration = 1.5;
   static const double blinkInterval = 0.1;
 
   // Game speed & difficulty
-  static const double initialSpeed = 300.0;
-  static const double maxSpeed = 800.0;
+  static const double initialSpeed = 200.0;
+  static const double maxSpeed = 500.0;
   static const double speedIncrement = 10.0;
   static const double speedIncrementInterval = 5.0; // seconds
   static const double initialSpawnInterval = 2.5;
@@ -29,8 +32,8 @@ class GameConstants {
 
   // Easy mode: slower & simpler for the first N seconds so kids can learn
   static const double easyModeDuration = 180.0; // 3 minutes
-  static const double easyModeSpeed = 220.0; // slower than initialSpeed
-  static const double easyModeSpawnInterval = 3.5; // sparser obstacles
+  static const double easyModeSpeed = 150.0; // slower than initialSpeed
+  static const double easyModeSpawnInterval = 4.0; // sparser obstacles
 
   // Scoring
   static const double scoreMultiplier = 0.1;
