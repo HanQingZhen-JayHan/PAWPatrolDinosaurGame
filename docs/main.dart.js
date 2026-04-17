@@ -84470,7 +84470,7 @@ l=A.X(a).ok.f
 l=A.bz("ROOM CODE",m,m,m,l==null?m:l.pG(B.j,B.H),m,m)
 r=A.fU(16)
 q=t.p
-r=A.a2j(new A.bM(B.dk,A.eO(A.c([l,B.l7,A.dJ(m,A.bz(o,m,m,m,B.XY,m,m),B.r,m,m,new A.dZ(B.al,m,m,r,m,m,B.aX),m,m,m,B.jj,m,m,m),B.T3,A.dJ(m,new A.Ay("https://hanqingzhen-jayhan.github.io/PAWPatrolDinosaurGame/?room="+o,220,m),B.r,m,m,new A.dZ(B.j,m,m,A.fU(12),m,m,B.aX),m,m,m,B.FP,m,m,m),B.l7,B.YG],q),B.P,B.bY,B.an),m),1)
+r=A.a2j(new A.bM(B.dk,A.eO(A.c([l,B.l7,A.dJ(m,A.bz(o,m,m,m,B.XY,m,m),B.r,m,m,new A.dZ(B.al,m,m,r,m,m,B.aX),m,m,m,B.jj,m,m,m),B.T3,A.dJ(m,new A.Ay("https://hanqingzhen-jayhan.github.io/PAWPatrolDinosaurGame/?room="+o,320,m),B.r,m,m,new A.dZ(B.j,m,m,A.fU(12),m,m,B.aX),m,m,m,B.FP,m,m,m),B.l7,B.YG],q),B.P,B.bY,B.an),m),1)
 l=p.length
 n=A.X(a).ok.f
 n=n==null?m:n.pG(B.j,B.H)
