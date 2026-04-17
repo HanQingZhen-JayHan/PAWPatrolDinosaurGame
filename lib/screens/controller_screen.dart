@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pup_dash/constants/theme.dart';
-import 'package:pup_dash/models/message.dart';
 import 'package:pup_dash/providers/controller_provider.dart';
 import 'package:pup_dash/sensor/motion_calibrator.dart';
 import 'package:pup_dash/sensor/motion_detector.dart';
@@ -20,6 +19,7 @@ class ControllerScreen extends StatefulWidget {
 class _ControllerScreenState extends State<ControllerScreen> {
   late final MotionDetector _detector;
   bool _motionActive = false;
+  String _lastAction = '';
 
   @override
   void initState() {
@@ -27,6 +27,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
     _detector = MotionDetector(calibration: widget.calibration);
     _detector.onAction = (action) {
       context.read<ControllerProvider>().sendInput(action);
+      setState(() => _lastAction = action);
     };
   }
 
@@ -34,18 +35,6 @@ class _ControllerScreenState extends State<ControllerScreen> {
   void dispose() {
     _detector.dispose();
     super.dispose();
-  }
-
-  void _toggleMotion() {
-    setState(() {
-      if (_motionActive) {
-        _detector.stop();
-        _motionActive = false;
-      } else {
-        _detector.start();
-        _motionActive = true;
-      }
-    });
   }
 
   @override
@@ -112,65 +101,53 @@ class _ControllerScreenState extends State<ControllerScreen> {
                       ],
                     ),
                     const Spacer(),
-                    // Motion status
+
+                    // Sensor status display
                     Icon(
-                      _motionActive
-                          ? Icons.sensors
-                          : Icons.sensors_off,
-                      size: 64,
+                      _motionActive ? Icons.sensors : Icons.sensors_off,
+                      size: 80,
                       color: _motionActive
                           ? Colors.greenAccent
                           : Colors.white54,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
                       _motionActive
-                          ? 'Motion detection ON'
-                          : 'Motion detection OFF',
+                          ? 'Sensors active — move to play!'
+                          : 'Tap READY to start sensors',
                       style: TextStyle(
                         color: _motionActive
                             ? Colors.greenAccent
                             : Colors.white54,
-                        fontSize: 16,
+                        fontSize: 18,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    // Toggle motion
-                    ElevatedButton(
-                      onPressed: _toggleMotion,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            _motionActive ? Colors.orange : Colors.green,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 12),
-                      ),
-                      child: Text(_motionActive ? 'PAUSE SENSORS' : 'START SENSORS',
-                          style: const TextStyle(fontSize: 18)),
                     ),
                     const SizedBox(height: 16),
-                    // Fallback buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _FallbackButton(
-                          label: 'JUMP',
-                          icon: Icons.arrow_upward,
-                          color: Colors.green,
-                          onTap: () =>
-                              controller.sendInput(InputAction.jump),
+
+                    // Last detected action feedback
+                    if (_motionActive && _lastAction.isNotEmpty)
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _lastAction == 'jump'
+                              ? Colors.green.withValues(alpha: 0.6)
+                              : Colors.orange.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        _FallbackButton(
-                          label: 'DUCK',
-                          icon: Icons.arrow_downward,
-                          color: Colors.orange,
-                          onTapDown: () =>
-                              controller.sendInput(InputAction.duckStart),
-                          onTapUp: () =>
-                              controller.sendInput(InputAction.duckEnd),
+                        child: Text(
+                          _lastAction.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+
                     const Spacer(),
+
                     // Ready / Start / End buttons
                     if (!controller.isReady)
                       ElevatedButton(
@@ -204,8 +181,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                               onPressed: controller.requestStart,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: PupTheme.primaryBlue,
-                                minimumSize:
-                                    const Size(double.infinity, 56),
+                                minimumSize: const Size(double.infinity, 56),
                               ),
                               child: const Text('START GAME',
                                   style: TextStyle(fontSize: 20)),
@@ -227,54 +203,6 @@ class _ControllerScreenState extends State<ControllerScreen> {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _FallbackButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-  final VoidCallback? onTapDown;
-  final VoidCallback? onTapUp;
-
-  const _FallbackButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    this.onTap,
-    this.onTapDown,
-    this.onTapUp,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      onTapDown: onTapDown != null ? (_) => onTapDown!() : null,
-      onTapUp: onTapUp != null ? (_) => onTapUp!() : null,
-      onTapCancel: onTapUp,
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.7),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 36),
-            Text(label,
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12)),
-          ],
         ),
       ),
     );
