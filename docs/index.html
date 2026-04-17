@@ -41,6 +41,38 @@
     function checkSensorAvailable() {
       return 'DeviceMotionEvent' in window || 'DeviceOrientationEvent' in window;
     }
+
+    // Screen Wake Lock: prevent the phone from dimming/locking while playing
+    let _wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          _wakeLock = await navigator.wakeLock.request('screen');
+          _wakeLock.addEventListener('release', () => { _wakeLock = null; });
+          // If the page becomes visible again after being hidden, re-acquire
+          document.addEventListener('visibilitychange', async () => {
+            if (_wakeLock === null && document.visibilityState === 'visible') {
+              try {
+                _wakeLock = await navigator.wakeLock.request('screen');
+              } catch (_) {}
+            }
+          });
+          return true;
+        }
+      } catch (e) {
+        console.error('Wake lock error:', e);
+      }
+      return false;
+    }
+
+    async function releaseWakeLock() {
+      try {
+        if (_wakeLock !== null) {
+          await _wakeLock.release();
+          _wakeLock = null;
+        }
+      } catch (_) {}
+    }
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>

@@ -1,3 +1,6 @@
+import 'dart:js_interop';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -7,6 +10,12 @@ import 'package:pup_dash/sensor/motion_calibrator.dart';
 import 'package:pup_dash/sensor/motion_detector.dart';
 import 'package:pup_dash/screens/game_over_result_screen.dart';
 import 'package:pup_dash/widgets/character_icon.dart';
+
+@JS('requestWakeLock')
+external JSPromise<JSBoolean> _jsRequestWakeLock();
+
+@JS('releaseWakeLock')
+external JSPromise<JSAny?> _jsReleaseWakeLock();
 
 class ControllerScreen extends StatefulWidget {
   final CalibrationResult calibration;
@@ -46,18 +55,31 @@ class _ControllerScreenState extends State<ControllerScreen> {
     };
     // Auto-start: mark ready and begin motion detection as soon as the
     // controller screen mounts. Player doesn't need to click READY.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final controller = context.read<ControllerProvider>();
       if (!controller.isReady) controller.markReady();
       _detector.start();
-      setState(() => _motionActive = true);
+      if (mounted) setState(() => _motionActive = true);
+
+      // On web, request a screen wake lock so the phone doesn't dim/lock
+      // during gameplay — keeps the controller responsive.
+      if (kIsWeb) {
+        try {
+          await _jsRequestWakeLock().toDart;
+        } catch (_) {}
+      }
     });
   }
 
   @override
   void dispose() {
     _detector.dispose();
+    if (kIsWeb) {
+      try {
+        _jsReleaseWakeLock();
+      } catch (_) {}
+    }
     super.dispose();
   }
 
