@@ -67,6 +67,7 @@ class PlayerComponent extends PositionComponent
     switch (action) {
       case InputAction.jump:
         if (_isOnGround && !_isDucking) {
+          _baseX = position.x; // remember current lane position to return to
           _velocityY = GameConstants.jumpVelocity;
           _velocityX = GameConstants.jumpForwardVelocity;
           _isOnGround = false;

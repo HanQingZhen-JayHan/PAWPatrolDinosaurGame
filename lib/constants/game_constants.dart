@@ -5,8 +5,10 @@ class GameConstants {
   static const double jumpVelocity = -640.0;
   static const double gravity = 850.0;
   // Forward momentum during jump (arcs up & forward, returns on landing)
-  static const double jumpForwardVelocity = 200.0;
-  static const double jumpForwardGravity = 266.0;
+  // Peak forward displacement ≈ jumpForwardVelocity²/(2*jumpForwardGravity)
+  // With 450/600, peak ≈ 170px (visible forward lean)
+  static const double jumpForwardVelocity = 450.0;
+  static const double jumpForwardGravity = 600.0;
   static const int maxLives = 5;
   static const double invincibilityDuration = 1.5;
   static const double blinkInterval = 0.1;

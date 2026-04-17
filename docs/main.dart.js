@@ -85252,8 +85252,9 @@ case 1:return A.G(p.at(-1),r)}})
 return A.I($async$eh,r)},
 zH(a){var s,r=this
 if(r.aI)return
-switch(a){case"jump":if(r.to&&!r.x1){r.R8=-640
-r.RG=200
+switch(a){case"jump":if(r.to&&!r.x1){r.rx=r.ax.d.a[0]
+r.R8=-640
+r.RG=450
 r.to=!1
 r.p4=B.yt}break
 case"duck_start":if(r.to){r.x1=!0
@@ -85285,7 +85286,7 @@ r=p.ax.d
 q=r.a
 r.kI(q[1]+s*a)
 r.W()
-s=p.RG-266*a
+s=p.RG-600*a
 p.RG=s
 r.rB(q[0]+s*a)
 r.W()
