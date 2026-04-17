@@ -143,7 +143,8 @@ class PupDashGame extends FlameGame
     _difficulty.update(dt);
     final speed = _difficulty.gameSpeed;
     _background.updateSpeed(speed);
-    _obstacleManager.updateDifficulty(speed, _scoreManager.maxScore);
+    _obstacleManager.updateDifficulty(speed, _scoreManager.maxScore,
+        easyMode: _difficulty.isEasyMode);
     _obstacleManager.updateSpawnInterval(_difficulty.elapsed);
 
     // Update scores for alive players

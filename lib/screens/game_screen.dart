@@ -64,14 +64,15 @@ class _GameScreenState extends State<GameScreen> {
                     children: [
                       QrImageView(
                         data: 'https://hanqingzhen-jayhan.github.io/PAWPatrolDinosaurGame/?room=$roomCode',
-                        size: 80,
+                        size: 160,
                       ),
                       Text(
                         roomCode,
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: PupTheme.backgroundDark,
+                          letterSpacing: 4,
                         ),
                       ),
                     ],
@@ -305,63 +306,69 @@ class _PlayerHud extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned(
       top: 8,
-      // Offset so the HUD doesn't overlap the QR code in the top-left
-      left: 150,
       right: 8,
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: players.map((player) {
-          return Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: (player.character?.color ?? Colors.grey)
-                    .withValues(alpha: player.isAlive ? 0.7 : 0.3),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CharacterIcon(character: player.character, size: 18),
-                  const SizedBox(width: 4),
-                  // Hearts
-                  ...List.generate(
-                    GameConstants.maxLives,
-                    (i) => Icon(
-                      Icons.favorite,
-                      color: i < player.lives
-                          ? PupTheme.heartRed
-                          : Colors.white24,
-                      size: 16,
-                    ),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: (player.character?.color ?? Colors.grey)
+                  .withValues(alpha: player.isAlive ? 0.8 : 0.3),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CharacterIcon(character: player.character, size: 24),
+                const SizedBox(width: 6),
+                // Hearts
+                ...List.generate(
+                  GameConstants.maxLives,
+                  (i) => Icon(
+                    Icons.favorite,
+                    color: i < player.lives
+                        ? PupTheme.heartRed
+                        : Colors.white24,
+                    size: 18,
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${player.score.toInt()}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${player.score.toInt()}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                  if (!player.isAlive)
-                    const Text(' OUT',
+                ),
+                if (!player.isAlive)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 6),
+                    child: Text('OUT',
                         style: TextStyle(
                             color: Colors.redAccent,
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold)),
-                  // Host kick button — small and unobtrusive
-                  InkWell(
-                    onTap: () =>
-                        context.read<GameProvider>().kickPlayer(player.id),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4),
-                      child: Icon(Icons.close,
-                          color: Colors.white54, size: 14),
-                    ),
                   ),
-                ],
-              ),
+                // Host kick button — small and unobtrusive
+                InkWell(
+                  onTap: () =>
+                      context.read<GameProvider>().kickPlayer(player.id),
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 6),
+                    child: Icon(Icons.close,
+                        color: Colors.white54, size: 16),
+                  ),
+                ),
+              ],
             ),
           );
         }).toList(),

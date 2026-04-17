@@ -22,6 +22,11 @@ class GameConstants {
   static const double airObstacleThreshold = 500.0;
   static const double comboObstacleThreshold = 1000.0;
 
+  // Easy mode: slower & simpler for the first N seconds so kids can learn
+  static const double easyModeDuration = 180.0; // 3 minutes
+  static const double easyModeSpeed = 220.0; // slower than initialSpeed
+  static const double easyModeSpawnInterval = 3.5; // sparser obstacles
+
   // Scoring
   static const double scoreMultiplier = 0.1;
 

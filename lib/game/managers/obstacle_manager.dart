@@ -9,17 +9,25 @@ import 'package:pup_dash/models/obstacle.dart';
 class ObstacleManager extends Component with HasGameReference {
   final Random _random = Random();
   double _timeSinceLastSpawn = 0;
-  double _spawnInterval = GameConstants.initialSpawnInterval;
-  double _gameSpeed = GameConstants.initialSpeed;
+  double _spawnInterval = GameConstants.easyModeSpawnInterval;
+  double _gameSpeed = GameConstants.easyModeSpeed;
   double _totalScore = 0;
+  bool _easyMode = true;
 
-  void updateDifficulty(double speed, double score) {
+  void updateDifficulty(double speed, double score, {required bool easyMode}) {
     _gameSpeed = speed;
     _totalScore = score;
+    _easyMode = easyMode;
   }
 
   void updateSpawnInterval(double elapsed) {
-    final decrements = (elapsed / GameConstants.spawnIntervalDecrementEvery).floor();
+    if (_easyMode) {
+      _spawnInterval = GameConstants.easyModeSpawnInterval;
+      return;
+    }
+    final normalElapsed = elapsed - GameConstants.easyModeDuration;
+    final decrements =
+        (normalElapsed / GameConstants.spawnIntervalDecrementEvery).floor();
     _spawnInterval = (GameConstants.initialSpawnInterval -
             decrements * GameConstants.spawnIntervalDecrement)
         .clamp(GameConstants.minSpawnInterval, GameConstants.initialSpawnInterval);
@@ -39,7 +47,20 @@ class ObstacleManager extends Component with HasGameReference {
   void _spawnObstacle() {
     final availableTypes = <ObstacleType>[...ObstacleType.groundTypes];
 
-    // Add air obstacles after score threshold
+    // During easy mode: only ground obstacles, no combos
+    if (_easyMode) {
+      final type = availableTypes[_random.nextInt(availableTypes.length)];
+      final gameSize = game.size;
+      final groundY = gameSize.y * GameConstants.groundY;
+      parent?.add(ObstacleComponent(
+        type: type,
+        speed: _gameSpeed,
+        position: Vector2(gameSize.x + 50, groundY - type.height),
+      ));
+      return;
+    }
+
+    // Add air obstacles after score threshold (normal mode)
     if (_totalScore >= GameConstants.airObstacleThreshold) {
       availableTypes.addAll(ObstacleType.airTypes);
     }
@@ -89,8 +110,9 @@ class ObstacleManager extends Component with HasGameReference {
 
   void reset() {
     _timeSinceLastSpawn = 0;
-    _spawnInterval = GameConstants.initialSpawnInterval;
-    _gameSpeed = GameConstants.initialSpeed;
+    _spawnInterval = GameConstants.easyModeSpawnInterval;
+    _gameSpeed = GameConstants.easyModeSpeed;
     _totalScore = 0;
+    _easyMode = true;
   }
 }
