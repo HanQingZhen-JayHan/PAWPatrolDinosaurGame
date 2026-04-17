@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/screens/controller_join_screen.dart';
 import 'package:pup_dash/screens/mode_select_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final String? initialRoomCode;
+  const SplashScreen({super.key, this.initialRoomCode});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -32,8 +34,11 @@ class _SplashScreenState extends State<SplashScreen>
 
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
+        final destination = widget.initialRoomCode != null
+            ? ControllerJoinScreen(initialRoomCode: widget.initialRoomCode!)
+            : const ModeSelectScreen();
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const ModeSelectScreen()),
+          MaterialPageRoute(builder: (_) => destination),
         );
       }
     });

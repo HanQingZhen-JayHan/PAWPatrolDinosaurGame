@@ -109,7 +109,8 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: QrImageView(
-                              data: 'PUPDASH:$roomCode', size: 140),
+                              data: 'https://hanqingzhen-jayhan.github.io/PAWPatrolDinosaurGame/?room=$roomCode',
+                              size: 220),
                         ),
                         const SizedBox(height: 12),
                         const Text(

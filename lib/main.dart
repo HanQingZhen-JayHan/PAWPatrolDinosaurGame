@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,13 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
+  // Parse ?room=XXXX from URL on web
+  String? initialRoomCode;
+  if (kIsWeb) {
+    final uri = Uri.base;
+    initialRoomCode = uri.queryParameters['room'];
+  }
+
   runApp(
     MultiProvider(
       providers: [
@@ -35,7 +43,7 @@ void main() async {
               previous ?? ControllerProvider(networkProvider: network),
         ),
       ],
-      child: const PupDashApp(),
+      child: PupDashApp(initialRoomCode: initialRoomCode),
     ),
   );
 }

@@ -7,16 +7,23 @@ import 'package:pup_dash/providers/network_provider.dart';
 import 'package:pup_dash/screens/character_select_screen.dart';
 
 class ControllerJoinScreen extends StatefulWidget {
-  const ControllerJoinScreen({super.key});
+  final String? initialRoomCode;
+  const ControllerJoinScreen({super.key, this.initialRoomCode});
 
   @override
   State<ControllerJoinScreen> createState() => _ControllerJoinScreenState();
 }
 
 class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
-  final _codeController = TextEditingController();
+  late final TextEditingController _codeController;
   final _nameController = TextEditingController(text: 'Player');
   bool _connecting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _codeController = TextEditingController(text: widget.initialRoomCode ?? '');
+  }
 
   @override
   void dispose() {

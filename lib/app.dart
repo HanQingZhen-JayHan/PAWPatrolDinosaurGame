@@ -4,7 +4,10 @@ import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/screens/splash_screen.dart';
 
 class PupDashApp extends StatelessWidget {
-  const PupDashApp({super.key});
+  /// Optional room code passed from URL query parameter (?room=XXXX).
+  final String? initialRoomCode;
+
+  const PupDashApp({super.key, this.initialRoomCode});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +15,7 @@ class PupDashApp extends StatelessWidget {
       title: 'Pup Dash',
       theme: PupTheme.themeData,
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      home: SplashScreen(initialRoomCode: initialRoomCode),
     );
   }
 }
