@@ -22,6 +22,11 @@ enum PupCharacter {
   String get jumpAsset => 'assets/images/characters/${name}_jump.png';
   String get duckAsset => 'assets/images/characters/${name}_duck.png';
 
+  /// Characters that have a custom icon image asset.
+  /// Add more here as assets are added.
+  static const Set<String> _withIcon = {'skye', 'marshall'};
+  bool get hasIconImage => _withIcon.contains(name);
+
   static PupCharacter? fromName(String name) {
     try {
       return PupCharacter.values.firstWhere((c) => c.name == name);

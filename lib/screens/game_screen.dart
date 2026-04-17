@@ -9,6 +9,7 @@ import 'package:pup_dash/game/pup_dash_game.dart';
 import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/models/player.dart';
 import 'package:pup_dash/providers/game_provider.dart';
+import 'package:pup_dash/widgets/character_icon.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -178,7 +179,6 @@ class _GameOverOverlay extends StatelessWidget {
                   itemCount: rankings.length,
                   itemBuilder: (context, index) {
                     final player = rankings[index];
-                    final emoji = player.character?.emoji ?? '🐕';
                     final name = player.character?.displayName ??
                         player.name;
                     return ListTile(
@@ -193,10 +193,15 @@ class _GameOverOverlay extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      title: Text(
-                        '$emoji $name',
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 18),
+                      title: Row(
+                        children: [
+                          CharacterIcon(
+                              character: player.character, size: 24),
+                          const SizedBox(width: 8),
+                          Text(name,
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 18)),
+                        ],
                       ),
                       trailing: Text(
                         '${player.score.toInt()}',
@@ -256,10 +261,7 @@ class _PodiumRow extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                player.character?.emoji ?? '🐕',
-                style: const TextStyle(fontSize: 36),
-              ),
+              CharacterIcon(character: player.character, size: 36),
               Text(
                 player.character?.displayName ?? player.name,
                 style: const TextStyle(
@@ -319,10 +321,7 @@ class _PlayerHud extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    player.character?.emoji ?? '🐕',
-                    style: const TextStyle(fontSize: 18),
-                  ),
+                  CharacterIcon(character: player.character, size: 18),
                   const SizedBox(width: 4),
                   // Hearts
                   ...List.generate(

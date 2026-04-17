@@ -6,6 +6,7 @@ import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/providers/game_provider.dart';
 import 'package:pup_dash/screens/game_screen.dart';
+import 'package:pup_dash/widgets/character_icon.dart';
 
 class HostLobbyScreen extends StatefulWidget {
   const HostLobbyScreen({super.key});
@@ -151,9 +152,9 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                                         .withValues(alpha: 0.8) ??
                                     Colors.white24,
                                 child: ListTile(
-                                  leading: Text(
-                                    player.character?.emoji ?? '❓',
-                                    style: const TextStyle(fontSize: 28),
+                                  leading: CharacterIcon(
+                                    character: player.character,
+                                    size: 28,
                                   ),
                                   title: Text(
                                     player.character?.displayName ??

@@ -5,6 +5,7 @@ import 'package:pup_dash/constants/characters.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/providers/controller_provider.dart';
 import 'package:pup_dash/screens/calibration_screen.dart';
+import 'package:pup_dash/widgets/character_icon.dart';
 
 class CharacterSelectScreen extends StatelessWidget {
   const CharacterSelectScreen({super.key});
@@ -82,9 +83,9 @@ class CharacterSelectScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(character.emoji,
-                              style: TextStyle(
-                                  fontSize: isTaken ? 32 : 48)),
+                          CharacterIcon(
+                              character: character,
+                              size: isTaken ? 32 : 48),
                           const SizedBox(height: 8),
                           Text(
                             character.displayName,

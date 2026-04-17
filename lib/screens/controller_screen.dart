@@ -6,6 +6,7 @@ import 'package:pup_dash/providers/controller_provider.dart';
 import 'package:pup_dash/sensor/motion_calibrator.dart';
 import 'package:pup_dash/sensor/motion_detector.dart';
 import 'package:pup_dash/screens/game_over_result_screen.dart';
+import 'package:pup_dash/widgets/character_icon.dart';
 
 class ControllerScreen extends StatefulWidget {
   final CalibrationResult calibration;
@@ -88,10 +89,9 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          controller.selectedCharacter?.emoji ?? '🐕',
-                          style: const TextStyle(fontSize: 36),
-                        ),
+                        CharacterIcon(
+                            character: controller.selectedCharacter,
+                            size: 36),
                         Column(
                           children: [
                             Text(
