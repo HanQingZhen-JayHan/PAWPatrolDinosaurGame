@@ -1,6 +1,7 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/constants/theme.dart';
@@ -37,6 +38,47 @@ class _GameScreenState extends State<GameScreen> {
       body: Stack(
         children: [
           GameWidget(game: _game),
+          // Room QR code — top left corner for easy join/rejoin
+          Consumer<GameProvider>(
+            builder: (context, provider, _) {
+              final roomCode = provider.roomCode;
+              if (roomCode == null) return const SizedBox.shrink();
+              return Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      QrImageView(
+                        data: 'https://hanqingzhen-jayhan.github.io/PAWPatrolDinosaurGame/?room=$roomCode',
+                        size: 80,
+                      ),
+                      Text(
+                        roomCode,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: PupTheme.backgroundDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
           // Lives + Score HUD (always visible during play)
           Consumer<GameProvider>(
             builder: (context, provider, _) {
