@@ -20,6 +20,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
   late final MotionDetector _detector;
   bool _motionActive = false;
   String _lastAction = '';
+  bool _navigatedToResults = false;
   // Debug info
   double _rawY = 0;
   double _filteredY = 0;
@@ -63,8 +64,11 @@ class _ControllerScreenState extends State<ControllerScreen> {
         ),
         child: Consumer<ControllerProvider>(
           builder: (context, controller, _) {
-            // Navigate to results on game over
-            if (controller.rankings.isNotEmpty && !controller.gameActive) {
+            // Navigate to results on game over (only once)
+            if (!_navigatedToResults &&
+                controller.rankings.isNotEmpty &&
+                !controller.gameActive) {
+              _navigatedToResults = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
                   Navigator.of(context).pushReplacement(

@@ -4,9 +4,51 @@ import 'package:provider/provider.dart';
 import 'package:pup_dash/constants/characters.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/providers/controller_provider.dart';
+import 'package:pup_dash/sensor/motion_calibrator.dart';
+import 'package:pup_dash/screens/controller_screen.dart';
 
-class GameOverResultScreen extends StatelessWidget {
+class GameOverResultScreen extends StatefulWidget {
   const GameOverResultScreen({super.key});
+
+  @override
+  State<GameOverResultScreen> createState() => _GameOverResultScreenState();
+}
+
+class _GameOverResultScreenState extends State<GameOverResultScreen> {
+  bool _navigatedBack = false;
+  ControllerProvider? _controllerProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controllerProvider ??= context.read<ControllerProvider>()
+      ..addListener(_checkForNewGame);
+  }
+
+  void _checkForNewGame() {
+    if (_navigatedBack || !mounted) return;
+    final c = _controllerProvider!;
+    // New game starting: either countdown in progress or gameplay active
+    if (c.countdown > 0 || c.gameActive) {
+      _navigatedBack = true;
+      final defaultCal = CalibrationResult(
+        baselineY: 0,
+        jumpThreshold: 1.5,
+        duckThreshold: 0.8,
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => ControllerScreen(calibration: defaultCal),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controllerProvider?.removeListener(_checkForNewGame);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

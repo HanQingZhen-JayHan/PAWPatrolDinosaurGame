@@ -106,11 +106,21 @@ class ControllerProvider extends ChangeNotifier {
 
       case MessageType.gameStarting:
         _countdown = message.payload['countdown'] as int? ?? 0;
+        // Clear stale results when a new countdown begins (replay)
+        if (_rankings.isNotEmpty) {
+          _rankings = [];
+          _personalRank = null;
+        }
         notifyListeners();
 
       case MessageType.gameStarted:
         _gameActive = true;
         _livesRemaining = 3;
+        // Clear previous game results so controllers don't show stale data
+        _rankings = [];
+        _personalRank = null;
+        _personalScore = 0;
+        _winnerName = null;
         notifyListeners();
 
       case MessageType.hit:
