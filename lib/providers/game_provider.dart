@@ -19,6 +19,7 @@ class GameProvider extends ChangeNotifier {
 
   void Function(String playerId, String action)? onPlayerInput;
   void Function(GamePhase phase)? onPhaseChanged;
+  void Function()? onGameRestart;
 
   GameStateModel get state => _state;
   String? get roomCode => _room.roomCode;
@@ -203,6 +204,15 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Host-initiated kick: remove a player from the room.
+  Future<void> kickPlayer(String playerId) async {
+    _state.removePlayer(playerId);
+    await _room.removePlayer(playerId);
+    _broadcastLobbyUpdate();
+    notifyListeners();
+    if (_state.phase == GamePhase.playing) _checkGameEnd();
+  }
+
   void returnToLobby() {
     _state.resetForNewGame();
     _room.updateState({'phase': 'lobby'});
@@ -237,6 +247,9 @@ class GameProvider extends ChangeNotifier {
       });
     }
     _broadcastLobbyUpdate();
+
+    // Let the Flame game reset its visual state
+    onGameRestart?.call();
 
     // Start countdown for the new round
     _startCountdown();

@@ -44,6 +44,15 @@ class _ControllerScreenState extends State<ControllerScreen> {
         _sensorReceiving = true;
       });
     };
+    // Auto-start: mark ready and begin motion detection as soon as the
+    // controller screen mounts. Player doesn't need to click READY.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final controller = context.read<ControllerProvider>();
+      if (!controller.isReady) controller.markReady();
+      _detector.start();
+      setState(() => _motionActive = true);
+    });
   }
 
   @override
@@ -207,55 +216,33 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
                     const Spacer(),
 
-                    // Ready / Start / End
-                    if (!controller.isReady)
-                      ElevatedButton(
-                        onPressed: () {
-                          controller.markReady();
-                          _detector.start();
-                          setState(() => _motionActive = true);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          minimumSize: const Size(double.infinity, 56),
+                    // Countdown while waiting for the game to begin
+                    if (controller.isReady &&
+                        !controller.gameActive &&
+                        controller.countdown > 0)
+                      Text(
+                        '${controller.countdown}',
+                        style: const TextStyle(
+                          color: PupTheme.goldStar,
+                          fontSize: 64,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: const Text('READY!',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold)),
                       ),
-                    if (controller.isReady && !controller.gameActive)
-                      Column(
-                        children: [
-                          if (controller.countdown > 0)
-                            Text(
-                              '${controller.countdown}',
-                              style: const TextStyle(
-                                color: PupTheme.goldStar,
-                                fontSize: 64,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          else
-                            ElevatedButton(
-                              onPressed: controller.requestStart,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: PupTheme.primaryBlue,
-                                minimumSize: const Size(double.infinity, 56),
-                              ),
-                              child: const Text('START GAME',
-                                  style: TextStyle(fontSize: 20)),
-                            ),
-                        ],
+                    if (controller.isReady &&
+                        !controller.gameActive &&
+                        controller.countdown == 0)
+                      const Text(
+                        'Waiting for other players...',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     if (controller.gameActive)
-                      ElevatedButton(
-                        onPressed: controller.requestEnd,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: PupTheme.primaryRed,
-                          minimumSize: const Size(double.infinity, 48),
+                      const Text(
+                        'GO! Move to play!',
+                        style: TextStyle(
+                          color: Colors.greenAccent,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                        child: const Text('END GAME',
-                            style: TextStyle(fontSize: 18)),
                       ),
                   ],
                 ),

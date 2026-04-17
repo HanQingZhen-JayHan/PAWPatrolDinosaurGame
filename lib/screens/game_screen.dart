@@ -305,7 +305,8 @@ class _PlayerHud extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned(
       top: 8,
-      left: 8,
+      // Offset so the HUD doesn't overlap the QR code in the top-left
+      left: 150,
       right: 8,
       child: Row(
         children: players.map((player) {
@@ -349,6 +350,16 @@ class _PlayerHud extends StatelessWidget {
                             color: Colors.redAccent,
                             fontSize: 10,
                             fontWeight: FontWeight.bold)),
+                  // Host kick button — small and unobtrusive
+                  InkWell(
+                    onTap: () =>
+                        context.read<GameProvider>().kickPlayer(player.id),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Icon(Icons.close,
+                          color: Colors.white54, size: 14),
+                    ),
+                  ),
                 ],
               ),
             ),

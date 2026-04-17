@@ -21,8 +21,12 @@ class _GameOverResultScreenState extends State<GameOverResultScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controllerProvider ??= context.read<ControllerProvider>()
-      ..addListener(_checkForNewGame);
+    if (_controllerProvider == null) {
+      _controllerProvider = context.read<ControllerProvider>();
+      _controllerProvider!.addListener(_checkForNewGame);
+      // Check immediately — the state may have already changed before we subscribed
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkForNewGame());
+    }
   }
 
   void _checkForNewGame() {

@@ -50,10 +50,37 @@ class PupDashGame extends FlameGame
 
     // Wire up provider callbacks
     gameProvider.onPlayerInput = _handlePlayerInput;
+    gameProvider.onGameRestart = restart;
 
     // Create player components for all players in the session
     _spawnPlayers();
     _gameRunning = true;
+  }
+
+  /// Reset game state for a new round — called when host clicks Play Again.
+  void restart() {
+    // Remove all obstacles
+    children.whereType<ObstacleComponent>().toList().forEach((o) {
+      o.removeFromParent();
+    });
+
+    // Reset managers
+    _difficulty.reset();
+    _scoreManager.resetAll();
+    _obstacleManager.reset();
+
+    // Reset existing player components
+    for (final player in _playerComponents.values) {
+      player.reset();
+    }
+
+    // Reset HUD indicators
+    for (final entry in _heartIndicators.entries) {
+      entry.value.lives = GameConstants.maxLives;
+    }
+    for (final indicator in _scoreIndicators.values) {
+      indicator.score = 0;
+    }
   }
 
   void _spawnPlayers() {

@@ -84,6 +84,22 @@ class PlayerComponent extends PositionComponent
     _animState = PlayerAnimState.running;
   }
 
+  /// Reset player state for a new round.
+  void reset() {
+    _eliminated = false;
+    _eliminatedAlpha = 1.0;
+    _isInvincible = false;
+    _invincibilityTimer = 0;
+    _blinkTimer = 0;
+    _visible = true;
+    _velocityY = 0;
+    _isOnGround = true;
+    _isDucking = false;
+    _animState = PlayerAnimState.running;
+    size.y = GameConstants.playerHeight;
+    position.y = _groundY;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);

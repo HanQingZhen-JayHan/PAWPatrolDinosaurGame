@@ -166,12 +166,25 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  trailing: player.isReady
-                                      ? const Icon(Icons.check_circle,
-                                          color: Colors.greenAccent, size: 32)
-                                      : const Text('Waiting...',
-                                          style: TextStyle(
-                                              color: Colors.white70)),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      player.isReady
+                                          ? const Icon(Icons.check_circle,
+                                              color: Colors.greenAccent,
+                                              size: 28)
+                                          : const Text('Waiting...',
+                                              style: TextStyle(
+                                                  color: Colors.white70)),
+                                      IconButton(
+                                        icon: const Icon(Icons.close,
+                                            color: Colors.white70),
+                                        tooltip: 'Kick player',
+                                        onPressed: () =>
+                                            provider.kickPlayer(player.id),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             },
