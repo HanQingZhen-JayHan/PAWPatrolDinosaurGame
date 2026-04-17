@@ -2,11 +2,12 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/game/pup_dash_game.dart';
 import 'package:pup_dash/models/game_state.dart';
+import 'package:pup_dash/models/player.dart';
 import 'package:pup_dash/providers/game_provider.dart';
-import 'package:pup_dash/screens/host_lobby_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -25,11 +26,8 @@ class _GameScreenState extends State<GameScreen> {
     _game = PupDashGame(gameProvider: provider);
 
     provider.onPhaseChanged = (phase) {
-      if (phase == GamePhase.lobby && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HostLobbyScreen()),
-        );
-      }
+      // Stay on game screen — Play Again resets state without leaving room
+      if (mounted) setState(() {});
     };
   }
 
@@ -39,7 +37,17 @@ class _GameScreenState extends State<GameScreen> {
       body: Stack(
         children: [
           GameWidget(game: _game),
-          // HUD overlay
+          // Lives + Score HUD (always visible during play)
+          Consumer<GameProvider>(
+            builder: (context, provider, _) {
+              final state = provider.state;
+              if (state.phase != GamePhase.playing) {
+                return const SizedBox.shrink();
+              }
+              return _PlayerHud(players: state.playerList);
+            },
+          ),
+          // Phase overlays (countdown, game over)
           Consumer<GameProvider>(
             builder: (context, provider, _) {
               final state = provider.state;
@@ -241,6 +249,71 @@ class _PodiumRow extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _PlayerHud extends StatelessWidget {
+  final List<PlayerData> players;
+  const _PlayerHud({required this.players});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 8,
+      left: 8,
+      right: 8,
+      child: Row(
+        children: players.map((player) {
+          return Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: (player.character?.color ?? Colors.grey)
+                    .withValues(alpha: player.isAlive ? 0.7 : 0.3),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    player.character?.emoji ?? '🐕',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  const SizedBox(width: 4),
+                  // Hearts
+                  ...List.generate(
+                    GameConstants.maxLives,
+                    (i) => Icon(
+                      Icons.favorite,
+                      color: i < player.lives
+                          ? PupTheme.heartRed
+                          : Colors.white24,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${player.score.toInt()}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (!player.isAlive)
+                    const Text(' OUT',
+                        style: TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }

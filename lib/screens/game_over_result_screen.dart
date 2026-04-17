@@ -114,18 +114,9 @@ class GameOverResultScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () {
-                        controller.resetForNewGame();
-                        controller.markReady();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        minimumSize: const Size(double.infinity, 56),
-                      ),
-                      child: const Text('PLAY AGAIN',
-                          style: TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Waiting for host to start next round...',
+                      style: TextStyle(color: Colors.white54, fontSize: 14),
                     ),
                   ],
                 ),
