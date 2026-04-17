@@ -1,0 +1,38 @@
+name: paw_patrol_runner
+description: "PAW Patrol themed endless runner with phone-as-controller multiplayer"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flame: ^1.21.0
+  flame_audio: ^2.10.0
+  shelf: ^1.4.0
+  shelf_web_socket: ^2.0.0
+  web_socket_channel: ^3.0.0
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^5.0.0
+  provider: ^6.1.0
+  uuid: ^4.0.0
+  sensors_plus: ^5.0.0
+  google_fonts: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/characters/
+    - assets/images/obstacles/
+    - assets/images/backgrounds/
+    - assets/images/ui/
+    - assets/audio/
