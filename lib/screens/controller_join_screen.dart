@@ -14,46 +14,26 @@ class ControllerJoinScreen extends StatefulWidget {
 }
 
 class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
-  final _ipController = TextEditingController();
+  final _codeController = TextEditingController();
   final _nameController = TextEditingController(text: 'Player');
   bool _connecting = false;
 
   @override
   void dispose() {
-    _ipController.dispose();
+    _codeController.dispose();
     _nameController.dispose();
     super.dispose();
   }
 
-  Future<void> _connectManual() async {
-    final input = _ipController.text.trim();
-    if (input.isEmpty) return;
+  Future<void> _joinRoom() async {
+    final code = _codeController.text.trim().toUpperCase();
+    if (code.isEmpty) return;
 
-    final wsUrl = _toWsUrl(input);
-    await _connect(wsUrl);
-  }
-
-  /// Convert any input format to a ws:// URL:
-  ///   ws://host:port/ws  → as-is
-  ///   http://host:port   → ws://host:port/ws
-  ///   host:port          → ws://host:port/ws
-  String _toWsUrl(String input) {
-    if (input.startsWith('ws://')) return input;
-    if (input.startsWith('http://')) {
-      return '${input.replaceFirst('http://', 'ws://').replaceAll(RegExp(r'/+$'), '')}/ws';
-    }
-    if (input.startsWith('https://')) {
-      return '${input.replaceFirst('https://', 'wss://').replaceAll(RegExp(r'/+$'), '')}/ws';
-    }
-    return 'ws://$input/ws';
-  }
-
-  Future<void> _connect(String wsUrl) async {
     setState(() => _connecting = true);
     final controller = context.read<ControllerProvider>();
 
     try {
-      await controller.connect(wsUrl);
+      await controller.connect(code);
       controller.join(_nameController.text.trim());
 
       if (mounted && controller.isConnected) {
@@ -64,7 +44,7 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection failed: $e')),
+          SnackBar(content: Text('Could not join room: $e')),
         );
       }
     } finally {
@@ -93,6 +73,14 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const Icon(Icons.pets, size: 48, color: PupTheme.goldStar),
+              const SizedBox(height: 16),
+              const Text(
+                'Enter the room code\nshown on the host screen',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 24),
               // Name input
               TextField(
                 controller: _nameController,
@@ -105,35 +93,42 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              // Manual IP input
+              const SizedBox(height: 16),
+              // Room code input
               TextField(
-                controller: _ipController,
+                controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: 'Host IP:Port (e.g. 192.168.1.100:8080)',
+                  labelText: 'Room Code (e.g. ABCD)',
                   filled: true,
                   fillColor: Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                keyboardType: TextInputType.url,
-                onSubmitted: (_) => _connectManual(),
+                textCapitalization: TextCapitalization.characters,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 8,
+                ),
+                textAlign: TextAlign.center,
+                maxLength: 4,
+                onSubmitted: (_) => _joinRoom(),
               ),
               const SizedBox(height: 16),
               _connecting
                   ? const CircularProgressIndicator(color: Colors.white)
                   : ElevatedButton.icon(
-                      onPressed: _connectManual,
-                      icon: const Icon(Icons.wifi),
-                      label: const Text('CONNECT'),
+                      onPressed: _joinRoom,
+                      icon: const Icon(Icons.login),
+                      label: const Text('JOIN'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: PupTheme.primaryRed,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 48, vertical: 16),
                       ),
                     ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Consumer<NetworkProvider>(
                 builder: (context, network, _) {
                   if (network.status == ConnectionStatus.error) {

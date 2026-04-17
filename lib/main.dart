@@ -1,14 +1,20 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pup_dash/app.dart';
+import 'package:pup_dash/firebase_options.dart';
 import 'package:pup_dash/providers/controller_provider.dart';
 import 'package:pup_dash/providers/game_provider.dart';
 import 'package:pup_dash/providers/network_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,

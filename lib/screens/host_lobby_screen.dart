@@ -53,7 +53,7 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                   children: [
                     CircularProgressIndicator(color: Colors.white),
                     SizedBox(height: 16),
-                    Text('Starting server...',
+                    Text('Creating room...',
                         style: TextStyle(color: Colors.white, fontSize: 18)),
                   ],
                 ),
@@ -61,11 +61,11 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
             }
 
             final players = provider.state.playerList;
-            final httpUrl = provider.httpUrl;
+            final roomCode = provider.roomCode ?? '----';
 
             return Row(
               children: [
-                // Left: QR code
+                // Left: Room code + QR
                 Expanded(
                   flex: 1,
                   child: Padding(
@@ -74,7 +74,7 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'SCAN TO JOIN',
+                          'ROOM CODE',
                           style: Theme.of(context)
                               .textTheme
                               .headlineSmall
@@ -83,29 +83,38 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: PupTheme.goldStar,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: QrImageView(
-                            data: httpUrl,
-                            size: 200,
+                          child: Text(
+                            roomCode,
+                            style: const TextStyle(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: PupTheme.backgroundDark,
+                              letterSpacing: 12,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          httpUrl,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: QrImageView(
+                              data: 'PUPDASH:$roomCode', size: 140),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Manual: ${provider.serverIp}:${provider.serverPort}',
-                          style: const TextStyle(
-                              color: Colors.white38, fontSize: 10),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Enter code or scan QR to join',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),

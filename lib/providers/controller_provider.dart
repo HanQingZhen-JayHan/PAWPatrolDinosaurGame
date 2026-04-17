@@ -1,18 +1,15 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 
 import 'package:pup_dash/constants/characters.dart';
 import 'package:pup_dash/models/message.dart';
-import 'package:pup_dash/network/game_client.dart';
+import 'package:pup_dash/network/firebase_room_client.dart';
 import 'package:pup_dash/providers/network_provider.dart';
 
-/// Controller-side provider: manages client connection and local state.
+/// Controller-side provider: manages Firebase client and local state.
 class ControllerProvider extends ChangeNotifier {
-  final GameClient _client = GameClient();
+  final FirebaseRoomClient _client = FirebaseRoomClient();
   final NetworkProvider networkProvider;
 
-  String? _playerId;
   PupCharacter? _selectedCharacter;
   bool _isReady = false;
   int? _personalRank;
@@ -25,7 +22,7 @@ class ControllerProvider extends ChangeNotifier {
   bool _allReady = false;
   int _countdown = 0;
 
-  String? get playerId => _playerId;
+  String? get playerId => _client.playerId;
   PupCharacter? get selectedCharacter => _selectedCharacter;
   bool get isReady => _isReady;
   int? get personalRank => _personalRank;
@@ -41,7 +38,7 @@ class ControllerProvider extends ChangeNotifier {
 
   ControllerProvider({required this.networkProvider});
 
-  Future<void> connect(String wsUrl) async {
+  Future<void> connect(String roomCode) async {
     networkProvider.setStatus(ConnectionStatus.connecting);
     try {
       _client.onMessage = _handleMessage;
@@ -54,15 +51,16 @@ class ControllerProvider extends ChangeNotifier {
         _gameActive = false;
         notifyListeners();
       };
-      await _client.connect(wsUrl);
+      await _client.connect(roomCode);
     } catch (e) {
       networkProvider.setStatus(ConnectionStatus.error,
           error: 'Failed to connect: $e');
+      rethrow;
     }
   }
 
   void join(String playerName) {
-    _client.send(GameMessage.join(playerName));
+    _client.join(playerName);
   }
 
   void selectCharacter(PupCharacter character) {
@@ -90,7 +88,6 @@ class ControllerProvider extends ChangeNotifier {
   void _handleMessage(GameMessage message) {
     switch (message.type) {
       case MessageType.joined:
-        _playerId = message.payload['playerId'] as String?;
         notifyListeners();
 
       case MessageType.characterConfirmed:
@@ -102,7 +99,8 @@ class ControllerProvider extends ChangeNotifier {
 
       case MessageType.lobbyUpdate:
         _lobbyPlayers =
-            (message.payload['players'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            (message.payload['players'] as List?)?.cast<Map<String, dynamic>>() ??
+                [];
         _allReady = message.payload['allReady'] as bool? ?? false;
         notifyListeners();
 
@@ -127,9 +125,9 @@ class ControllerProvider extends ChangeNotifier {
 
       case MessageType.scoreUpdate:
         final scores = message.payload['scores'] as Map<String, dynamic>?;
-        if (scores != null && _playerId != null) {
+        if (scores != null && playerId != null) {
           _personalScore =
-              (scores[_playerId] as num?)?.toDouble() ?? _personalScore;
+              (scores[playerId] as num?)?.toDouble() ?? _personalScore;
         }
         notifyListeners();
 
@@ -138,9 +136,8 @@ class ControllerProvider extends ChangeNotifier {
         _rankings = (message.payload['rankings'] as List?)
                 ?.cast<Map<String, dynamic>>() ??
             [];
-        // Find personal rank
         for (final r in _rankings) {
-          if (r['playerId'] == _playerId) {
+          if (r['playerId'] == playerId) {
             _personalRank = r['rank'] as int?;
             _personalScore = (r['score'] as num?)?.toDouble() ?? 0;
           }

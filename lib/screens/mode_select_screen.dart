@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:pup_dash/constants/theme.dart';
@@ -10,8 +9,8 @@ class ModeSelectScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Web builds can only be controllers (no dart:io for WebSocket server)
-    final canHost = !kIsWeb;
+    // With Firebase, both host and controller work on any platform
+    const canHost = true;
 
     return Scaffold(
       body: Container(

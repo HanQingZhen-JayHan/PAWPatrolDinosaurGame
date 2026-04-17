@@ -1,159 +1,108 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:pup_dash/constants/characters.dart';
 import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/models/message.dart';
 import 'package:pup_dash/models/player.dart';
-import 'package:pup_dash/network/game_server.dart';
-import 'package:pup_dash/network/network_utils.dart';
+import 'package:pup_dash/network/firebase_room_host.dart';
 
-/// Host-side provider: manages server, game state, and Flame bridge.
+/// Host-side provider: manages Firebase room, game state, and Flame bridge.
 class GameProvider extends ChangeNotifier {
-  final GameServer _server = GameServer();
+  final FirebaseRoomHost _room = FirebaseRoomHost();
   final GameStateModel _state = GameStateModel();
-  final _uuid = const Uuid();
-
-  // Maps WebSocket client IDs to player IDs
-  final Map<String, String> _clientToPlayer = {};
-  final Map<String, String> _playerToClient = {};
 
   Timer? _countdownTimer;
   Timer? _scoreTimer;
 
-  /// Callback for the Flame game to receive input actions.
   void Function(String playerId, String action)? onPlayerInput;
-
-  /// Callback when game phase changes.
   void Function(GamePhase phase)? onPhaseChanged;
 
   GameStateModel get state => _state;
-  String? get serverIp => _server.ip;
-  int? get serverPort => _server.port;
-  String get wsUrl =>
-      NetworkUtils.buildWsUrl(_lanIp ?? 'localhost', _server.port ?? 8080);
-  String get httpUrl => 'http://${_lanIp ?? 'localhost'}:${_server.port ?? 8080}';
-  bool get isRunning => _server.isRunning;
-
-  String? _lanIp;
-  String? get lanIp => _lanIp;
+  String? get roomCode => _room.roomCode;
+  bool get isRunning => _room.isRunning;
 
   Future<void> startServer() async {
-    _lanIp = await NetworkUtils.getLocalIpAddress() ?? 'localhost';
-    final port = await NetworkUtils.findAvailablePort();
+    _room.onMessage = _handleMessage;
+    _room.onPlayerJoined = (_) {};
+    _room.onPlayerLeft = _handlePlayerLeft;
 
-    _server.onMessage = _handleMessage;
-    _server.onClientConnected = _handleClientConnected;
-    _server.onClientDisconnected = _handleClientDisconnected;
-
-    // Bind to 0.0.0.0 so phones on the same WiFi can connect
-    _server.lanIp = _lanIp;
-    await _server.start(ip: '0.0.0.0', port: port);
+    await _room.createRoom();
     notifyListeners();
   }
 
-  void _handleClientConnected(String clientId) {
-    // Client connected, wait for join message
-  }
-
-  void _handleClientDisconnected(String clientId) {
-    final playerId = _clientToPlayer.remove(clientId);
-    if (playerId != null) {
-      _playerToClient.remove(playerId);
-      _state.removePlayer(playerId);
-      _broadcastLobbyUpdate();
-      notifyListeners();
-
-      // Check if game should end due to disconnection
-      if (_state.phase == GamePhase.playing) {
-        _checkGameEnd();
-      }
+  void _handlePlayerLeft(String playerId) {
+    _state.removePlayer(playerId);
+    _broadcastLobbyUpdate();
+    notifyListeners();
+    if (_state.phase == GamePhase.playing) {
+      _checkGameEnd();
     }
   }
 
-  void _handleMessage(String clientId, GameMessage message) {
+  void _handleMessage(String playerId, GameMessage message) {
     switch (message.type) {
       case MessageType.join:
-        _handleJoin(clientId, message.payload['playerName'] as String? ?? '');
+        _handleJoin(playerId, message.payload['playerName'] as String? ?? '');
       case MessageType.selectCharacter:
         _handleSelectCharacter(
-            clientId, message.payload['character'] as String? ?? '');
+            playerId, message.payload['character'] as String? ?? '');
       case MessageType.ready:
-        _handleReady(clientId);
+        _handleReady(playerId);
       case MessageType.input:
-        _handleInput(clientId, message.payload['action'] as String? ?? '');
+        _handleInput(playerId, message.payload['action'] as String? ?? '');
       case MessageType.requestStart:
         _handleRequestStart();
       case MessageType.requestEnd:
         _handleRequestEnd();
       case MessageType.leave:
-        _handleClientDisconnected(clientId);
+        _handlePlayerLeft(playerId);
     }
   }
 
-  void _handleJoin(String clientId, String playerName) {
-    final playerId = _uuid.v4();
-    _clientToPlayer[clientId] = playerId;
-    _playerToClient[playerId] = clientId;
-
+  void _handleJoin(String playerId, String playerName) {
     final player = PlayerData(id: playerId, name: playerName);
     _state.addPlayer(player);
-
-    _server.sendTo(clientId, GameMessage.joined(playerId));
+    _room.sendToPlayer(playerId, GameMessage.joined(playerId));
     _broadcastLobbyUpdate();
     notifyListeners();
   }
 
-  void _handleSelectCharacter(String clientId, String characterName) {
-    final playerId = _clientToPlayer[clientId];
-    if (playerId == null) return;
-
+  void _handleSelectCharacter(String playerId, String characterName) {
     final character = PupCharacter.fromName(characterName);
     if (character == null) return;
-
-    // Check if character is already taken
-    final taken = _state.playerList.any(
-        (p) => p.id != playerId && p.character == character);
+    final taken = _state.playerList
+        .any((p) => p.id != playerId && p.character == character);
     if (taken) return;
-
     _state.players[playerId]?.character = character;
-    _server.sendTo(clientId, GameMessage.characterConfirmed(characterName));
+    _room.sendToPlayer(playerId, GameMessage.characterConfirmed(characterName));
+    _room.updatePlayer(playerId, {'character': characterName});
     _broadcastLobbyUpdate();
     notifyListeners();
   }
 
-  void _handleReady(String clientId) {
-    final playerId = _clientToPlayer[clientId];
-    if (playerId == null) return;
-
+  void _handleReady(String playerId) {
     _state.players[playerId]?.isReady = true;
+    _room.updatePlayer(playerId, {'ready': true});
     _broadcastLobbyUpdate();
     notifyListeners();
-
-    // Auto-start when all ready
     if (_state.allReady && _state.phase == GamePhase.lobby) {
       _startCountdown();
     }
   }
 
-  void _handleInput(String clientId, String action) {
+  void _handleInput(String playerId, String action) {
     if (_state.phase != GamePhase.playing) return;
-    final playerId = _clientToPlayer[clientId];
-    if (playerId == null) return;
-
     final player = _state.players[playerId];
     if (player == null || !player.isAlive) return;
-
     onPlayerInput?.call(playerId, action);
   }
 
   void _handleRequestStart() {
     if (_state.phase != GamePhase.lobby) return;
-    final hasReadyPlayer = _state.playerList.any((p) => p.isReady);
-    if (!hasReadyPlayer) return;
+    if (!_state.playerList.any((p) => p.isReady)) return;
     _startCountdown();
   }
 
@@ -166,7 +115,8 @@ class GameProvider extends ChangeNotifier {
     _state.phase = GamePhase.countdown;
     _state.countdownValue = GameConstants.countdownSeconds;
     onPhaseChanged?.call(GamePhase.countdown);
-    _server.broadcast(GameMessage.gameStarting(_state.countdownValue));
+    _room.updateState({'phase': 'countdown', 'countdownValue': _state.countdownValue});
+    _room.broadcast(GameMessage.gameStarting(_state.countdownValue));
     notifyListeners();
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -175,7 +125,8 @@ class GameProvider extends ChangeNotifier {
         timer.cancel();
         _startGame();
       } else {
-        _server.broadcast(GameMessage.gameStarting(_state.countdownValue));
+        _room.updateState({'countdownValue': _state.countdownValue});
+        _room.broadcast(GameMessage.gameStarting(_state.countdownValue));
         notifyListeners();
       }
     });
@@ -193,53 +144,47 @@ class GameProvider extends ChangeNotifier {
       }
     }
     onPhaseChanged?.call(GamePhase.playing);
-    _server.broadcast(GameMessage.gameStarted());
+    _room.updateState({'phase': 'playing'});
+    _room.broadcast(GameMessage.gameStarted());
     notifyListeners();
 
-    // Periodic score broadcasts
     _scoreTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       final scores = <String, double>{};
       for (final p in _state.playerList) {
         scores[p.id] = p.score;
       }
-      _server.broadcast(GameMessage.scoreUpdate(scores));
+      _room.updateScores(scores);
+      _room.broadcast(GameMessage.scoreUpdate(scores));
     });
   }
 
-  /// Called by the Flame game when a player is hit by an obstacle.
   void playerHit(String playerId) {
     final player = _state.players[playerId];
     if (player == null) return;
-
     player.hit();
-    final clientId = _playerToClient[playerId];
-    if (clientId != null) {
-      if (player.isAlive) {
-        _server.sendTo(clientId, GameMessage.hit(player.lives));
-      } else {
-        _server.sendTo(clientId, GameMessage.eliminated(player.score));
-      }
+    if (player.isAlive) {
+      _room.sendToPlayer(playerId, GameMessage.hit(player.lives));
+      _room.updatePlayer(playerId, {'lives': player.lives});
+    } else {
+      _room.sendToPlayer(playerId, GameMessage.eliminated(player.score));
+      _room.updatePlayer(playerId, {'alive': false, 'lives': 0});
     }
     notifyListeners();
     _checkGameEnd();
   }
 
-  /// Called by the Flame game each frame to update scores.
   void updateScore(String playerId, double score) {
     _state.players[playerId]?.score = score;
   }
 
   void _checkGameEnd() {
     if (_state.phase != GamePhase.playing) return;
-    if (_state.aliveCount <= 1) {
-      _endGame();
-    }
+    if (_state.aliveCount <= 1) _endGame();
   }
 
   void _endGame() {
     _state.phase = GamePhase.gameOver;
     _scoreTimer?.cancel();
-
     final rankings = _state.rankings;
     final rankingData = <Map<String, dynamic>>[];
     for (var i = 0; i < rankings.length; i++) {
@@ -252,32 +197,30 @@ class GameProvider extends ChangeNotifier {
         'isWinner': i == 0,
       });
     }
-
-    _server.broadcast(GameMessage.gameOver(rankingData));
+    _room.updateState({'phase': 'gameOver'});
+    _room.broadcast(GameMessage.gameOver(rankingData));
     onPhaseChanged?.call(GamePhase.gameOver);
     notifyListeners();
   }
 
   void returnToLobby() {
     _state.resetForNewGame();
+    _room.updateState({'phase': 'lobby'});
     _broadcastLobbyUpdate();
     onPhaseChanged?.call(GamePhase.lobby);
     notifyListeners();
   }
 
   void _broadcastLobbyUpdate() {
-    final players = _state.playerList
-        .map((p) => p.toJson())
-        .toList();
-    _server.broadcast(
-        GameMessage.lobbyUpdate(players, _state.allReady));
+    final players = _state.playerList.map((p) => p.toJson()).toList();
+    _room.broadcast(GameMessage.lobbyUpdate(players, _state.allReady));
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
     _scoreTimer?.cancel();
-    _server.stop();
+    _room.destroyRoom();
     super.dispose();
   }
 }
