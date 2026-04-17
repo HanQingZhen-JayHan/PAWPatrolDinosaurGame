@@ -101,7 +101,7 @@ class _GameScreenState extends State<GameScreen> {
               if (state.phase == GamePhase.gameOver) {
                 return _GameOverOverlay(
                   rankings: state.rankings,
-                  onPlayAgain: provider.returnToLobby,
+                  onPlayAgain: provider.restartGame,
                 );
               }
 

@@ -211,6 +211,37 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Restart the game immediately: reset scores/lives but keep players ready.
+  /// Controllers stay connected and regain control after the countdown.
+  void restartGame() {
+    _countdownTimer?.cancel();
+    _scoreTimer?.cancel();
+
+    // Reset game state but keep players ready & characters intact
+    for (final player in _state.playerList) {
+      player.score = 0;
+      player.lives = GameConstants.maxLives;
+      player.state = PlayerState.alive;
+      player.eliminatedAt = null;
+      // isReady stays true — players don't need to re-ready
+    }
+    _state.gameSpeed = GameConstants.initialSpeed;
+    _state.elapsedTime = 0;
+
+    // Broadcast updated player states
+    for (final player in _state.playerList) {
+      _room.updatePlayer(player.id, {
+        'score': 0,
+        'lives': GameConstants.maxLives,
+        'alive': true,
+      });
+    }
+    _broadcastLobbyUpdate();
+
+    // Start countdown for the new round
+    _startCountdown();
+  }
+
   void _broadcastLobbyUpdate() {
     final players = _state.playerList.map((p) => p.toJson()).toList();
     _room.broadcast(GameMessage.lobbyUpdate(players, _state.allReady));
