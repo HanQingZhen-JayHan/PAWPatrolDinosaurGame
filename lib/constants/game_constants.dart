@@ -1,9 +1,12 @@
 class GameConstants {
   GameConstants._();
 
-  // Player physics — high & far floaty jump
-  static const double jumpVelocity = -1400.0;
-  static const double gravity = 400.0;
+  // Player physics — parabolic arc, peak ~2× character height
+  static const double jumpVelocity = -640.0;
+  static const double gravity = 850.0;
+  // Forward momentum during jump (arcs up & forward, returns on landing)
+  static const double jumpForwardVelocity = 200.0;
+  static const double jumpForwardGravity = 266.0;
   static const int maxLives = 5;
   static const double invincibilityDuration = 1.5;
   static const double blinkInterval = 0.1;

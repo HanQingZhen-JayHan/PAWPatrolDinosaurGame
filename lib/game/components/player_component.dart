@@ -18,6 +18,8 @@ class PlayerComponent extends PositionComponent
 
   PlayerAnimState _animState = PlayerAnimState.running;
   double _velocityY = 0;
+  double _velocityX = 0;
+  double _baseX = 0;
   double _groundY = 0;
   bool _isOnGround = true;
   bool _isDucking = false;
@@ -43,7 +45,8 @@ class PlayerComponent extends PositionComponent
   Future<void> onLoad() async {
     size = Vector2(GameConstants.playerWidth, GameConstants.playerHeight);
     _groundY = game.size.y * GameConstants.groundY - size.y;
-    position = Vector2(100, _groundY);
+    _baseX = 100;
+    position = Vector2(_baseX, _groundY);
 
     // Try loading the character's icon image; falls back to vector art
     if (character.hasIconImage) {
@@ -65,6 +68,7 @@ class PlayerComponent extends PositionComponent
       case InputAction.jump:
         if (_isOnGround && !_isDucking) {
           _velocityY = GameConstants.jumpVelocity;
+          _velocityX = GameConstants.jumpForwardVelocity;
           _isOnGround = false;
           _animState = PlayerAnimState.jumping;
         }
@@ -105,11 +109,13 @@ class PlayerComponent extends PositionComponent
     _blinkTimer = 0;
     _visible = true;
     _velocityY = 0;
+    _velocityX = 0;
     _isOnGround = true;
     _isDucking = false;
     _animState = PlayerAnimState.running;
     size.y = GameConstants.playerHeight;
     position.y = _groundY;
+    position.x = _baseX;
   }
 
   @override
@@ -121,14 +127,20 @@ class PlayerComponent extends PositionComponent
       return;
     }
 
-    // Jump physics
+    // Jump physics — parabolic arc in both X (forward) and Y (up/down)
     if (!_isOnGround) {
       _velocityY += GameConstants.gravity * dt;
       position.y += _velocityY * dt;
 
+      // Forward motion during jump, decelerates then reverses
+      _velocityX -= GameConstants.jumpForwardGravity * dt;
+      position.x += _velocityX * dt;
+
       if (position.y >= _groundY) {
         position.y = _groundY;
+        position.x = _baseX; // snap back to starting lane
         _velocityY = 0;
+        _velocityX = 0;
         _isOnGround = true;
         if (!_isDucking) {
           _animState = PlayerAnimState.running;
