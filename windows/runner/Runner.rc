@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.pawpatrol" "\0"
-            VALUE "FileDescription", "paw_patrol_runner" "\0"
+            VALUE "CompanyName", "com.pupdash" "\0"
+            VALUE "FileDescription", "pup_dash" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "paw_patrol_runner" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.pawpatrol. All rights reserved." "\0"
-            VALUE "OriginalFilename", "paw_patrol_runner.exe" "\0"
-            VALUE "ProductName", "paw_patrol_runner" "\0"
+            VALUE "InternalName", "pup_dash" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.pupdash. All rights reserved." "\0"
+            VALUE "OriginalFilename", "pup_dash.exe" "\0"
+            VALUE "ProductName", "pup_dash" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

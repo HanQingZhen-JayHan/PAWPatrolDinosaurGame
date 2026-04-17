@@ -3,10 +3,10 @@ import 'dart:collection';
 
 import 'package:sensors_plus/sensors_plus.dart';
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
-import 'package:paw_patrol_runner/models/message.dart';
-import 'package:paw_patrol_runner/sensor/motion_calibrator.dart';
-import 'package:paw_patrol_runner/sensor/motion_state.dart';
+import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/models/message.dart';
+import 'package:pup_dash/sensor/motion_calibrator.dart';
+import 'package:pup_dash/sensor/motion_state.dart';
 
 class MotionDetector {
   final CalibrationResult calibration;

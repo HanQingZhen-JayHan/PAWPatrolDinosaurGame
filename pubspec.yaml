@@ -1,5 +1,5 @@
-name: paw_patrol_runner
-description: "PAW Patrol themed endless runner with phone-as-controller multiplayer"
+name: pup_dash
+description: "Pup Dash - multiplayer endless runner with phone-as-controller multiplayer"
 publish_to: 'none'
 version: 1.0.0+1
 

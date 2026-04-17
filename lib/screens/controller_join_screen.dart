@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/providers/controller_provider.dart';
-import 'package:paw_patrol_runner/providers/network_provider.dart';
-import 'package:paw_patrol_runner/screens/character_select_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/providers/controller_provider.dart';
+import 'package:pup_dash/providers/network_provider.dart';
+import 'package:pup_dash/screens/character_select_screen.dart';
 
 class ControllerJoinScreen extends StatefulWidget {
   const ControllerJoinScreen({super.key});
@@ -77,7 +77,7 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Join Game'),
-        backgroundColor: PawTheme.primaryRed,
+        backgroundColor: PupTheme.primaryRed,
         foregroundColor: Colors.white,
       ),
       body: Container(
@@ -85,7 +85,7 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Padding(
@@ -128,7 +128,7 @@ class _ControllerJoinScreenState extends State<ControllerJoinScreen> {
                       icon: const Icon(Icons.wifi),
                       label: const Text('CONNECT'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: PawTheme.primaryRed,
+                        backgroundColor: PupTheme.primaryRed,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 48, vertical: 16),
                       ),

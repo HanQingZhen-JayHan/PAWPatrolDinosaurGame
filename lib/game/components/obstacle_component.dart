@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 
-import 'package:paw_patrol_runner/models/obstacle.dart';
+import 'package:pup_dash/models/obstacle.dart';
 
 class ObstacleComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference {

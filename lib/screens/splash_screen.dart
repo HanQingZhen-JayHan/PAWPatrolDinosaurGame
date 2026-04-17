@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/screens/mode_select_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/screens/mode_select_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -53,7 +53,7 @@ class _SplashScreenState extends State<SplashScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Center(
@@ -62,10 +62,10 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.pets, size: 100, color: PawTheme.goldStar),
+                Icon(Icons.pets, size: 100, color: PupTheme.goldStar),
                 const SizedBox(height: 24),
                 Text(
-                  'PAW PATROL',
+                  'PUP DASH',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class _SplashScreenState extends State<SplashScreen>
                 Text(
                   'ENDLESS RUNNER',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: PawTheme.goldStar,
+                        color: PupTheme.goldStar,
                         fontWeight: FontWeight.bold,
                       ),
                 ),
@@ -85,7 +85,7 @@ class _SplashScreenState extends State<SplashScreen>
                   width: 40,
                   height: 40,
                   child: CircularProgressIndicator(
-                    color: PawTheme.goldStar,
+                    color: PupTheme.goldStar,
                     strokeWidth: 3,
                   ),
                 ),

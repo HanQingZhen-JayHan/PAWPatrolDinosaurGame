@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/screens/splash_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/screens/splash_screen.dart';
 
-class PawPatrolApp extends StatelessWidget {
-  const PawPatrolApp({super.key});
+class PupDashApp extends StatelessWidget {
+  const PupDashApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'PAW Patrol Runner',
-      theme: PawTheme.themeData,
+      title: 'Pup Dash',
+      theme: PupTheme.themeData,
       debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
     );

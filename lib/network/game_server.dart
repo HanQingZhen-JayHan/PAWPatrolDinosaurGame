@@ -7,7 +7,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'package:paw_patrol_runner/models/message.dart';
+import 'package:pup_dash/models/message.dart';
 
 typedef MessageHandler = void Function(String clientId, GameMessage message);
 
@@ -88,7 +88,7 @@ class GameServer {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PAW Patrol Runner - Join Game</title>
+  <title>Pup Dash - Join Game</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: -apple-system, sans-serif; text-align: center;
@@ -121,12 +121,12 @@ class GameServer {
 </head>
 <body>
   <div class="paw">🐾</div>
-  <h1>PAW PATROL RUNNER</h1>
+  <h1>PUP DASH</h1>
   <h2>Join the game!</h2>
   <div class="card">
     <div class="spinner"></div>
     <div class="loading-text">Connecting to game...</div>
-    <div class="step"><b>Step 1:</b> Open the PAW Patrol Runner app on your phone</div>
+    <div class="step"><b>Step 1:</b> Open the Pup Dash app on your phone</div>
     <div class="step"><b>Step 2:</b> Tap <b>"Join Game"</b></div>
     <div class="step"><b>Step 3:</b> Enter this address:</div>
     <code>$_displayIp:$_port</code>

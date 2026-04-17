@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
-import 'package:paw_patrol_runner/constants/theme.dart';
+import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/constants/theme.dart';
 
 class HeartIndicator extends PositionComponent {
   int lives;
@@ -21,7 +21,7 @@ class HeartIndicator extends PositionComponent {
       final x = i * 24.0;
       final paint = Paint()
         ..color = i < lives
-            ? PawTheme.heartRed
+            ? PupTheme.heartRed
             : const Color(0x44FFFFFF);
 
       // Simple heart shape using path

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/providers/controller_provider.dart';
-import 'package:paw_patrol_runner/providers/game_provider.dart';
-import 'package:paw_patrol_runner/providers/network_provider.dart';
-import 'package:paw_patrol_runner/screens/splash_screen.dart';
+import 'package:pup_dash/providers/controller_provider.dart';
+import 'package:pup_dash/providers/game_provider.dart';
+import 'package:pup_dash/providers/network_provider.dart';
+import 'package:pup_dash/screens/splash_screen.dart';
 
 void main() {
   testWidgets('Splash screen renders title', (WidgetTester tester) async {
@@ -26,7 +26,7 @@ void main() {
       ),
     );
 
-    expect(find.text('PAW PATROL'), findsOneWidget);
+    expect(find.text('PUP DASH'), findsOneWidget);
     expect(find.text('ENDLESS RUNNER'), findsOneWidget);
 
     // Pump past the 2-second timer to avoid pending timer assertion

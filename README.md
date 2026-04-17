@@ -1,4 +1,4 @@
-# paw_patrol_runner
+# Pup Dash
 
 A new Flutter project.
 

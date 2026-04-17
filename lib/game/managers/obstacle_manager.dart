@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
-import 'package:paw_patrol_runner/game/components/obstacle_component.dart';
-import 'package:paw_patrol_runner/models/obstacle.dart';
+import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/game/components/obstacle_component.dart';
+import 'package:pup_dash/models/obstacle.dart';
 
 class ObstacleManager extends Component with HasGameReference {
   final Random _random = Random();

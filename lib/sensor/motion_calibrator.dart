@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:sensors_plus/sensors_plus.dart';
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
+import 'package:pup_dash/constants/game_constants.dart';
 
 enum CalibrationStep { idle, standStill, practiceJumps, practiceDuck, done }
 

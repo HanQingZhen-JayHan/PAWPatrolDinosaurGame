@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/app.dart';
-import 'package:paw_patrol_runner/providers/controller_provider.dart';
-import 'package:paw_patrol_runner/providers/game_provider.dart';
-import 'package:paw_patrol_runner/providers/network_provider.dart';
+import 'package:pup_dash/app.dart';
+import 'package:pup_dash/providers/controller_provider.dart';
+import 'package:pup_dash/providers/game_provider.dart';
+import 'package:pup_dash/providers/network_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ void main() {
               previous ?? ControllerProvider(networkProvider: network),
         ),
       ],
-      child: const PawPatrolApp(),
+      child: const PupDashApp(),
     ),
   );
 }

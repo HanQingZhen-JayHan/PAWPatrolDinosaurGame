@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
+import 'package:pup_dash/constants/game_constants.dart';
 
 /// Simple parallax background with colored layers (no sprite assets needed).
 class ParallaxBackground extends PositionComponent with HasGameReference {

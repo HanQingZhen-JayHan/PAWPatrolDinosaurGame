@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/models/game_state.dart';
-import 'package:paw_patrol_runner/providers/game_provider.dart';
-import 'package:paw_patrol_runner/screens/game_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/models/game_state.dart';
+import 'package:pup_dash/providers/game_provider.dart';
+import 'package:pup_dash/screens/game_screen.dart';
 
 class HostLobbyScreen extends StatefulWidget {
   const HostLobbyScreen({super.key});
@@ -41,7 +41,7 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Consumer<GameProvider>(

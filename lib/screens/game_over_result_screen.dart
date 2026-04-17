@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/constants/characters.dart';
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/providers/controller_provider.dart';
+import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/providers/controller_provider.dart';
 
 class GameOverResultScreen extends StatelessWidget {
   const GameOverResultScreen({super.key});
@@ -16,7 +16,7 @@ class GameOverResultScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Consumer<ControllerProvider>(
@@ -29,7 +29,7 @@ class GameOverResultScreen extends StatelessWidget {
                   children: [
                     // Trophy
                     const Icon(Icons.emoji_events,
-                        size: 64, color: PawTheme.goldStar),
+                        size: 64, color: PupTheme.goldStar),
                     const SizedBox(height: 16),
                     Text(
                       'GAME OVER',
@@ -52,7 +52,7 @@ class GameOverResultScreen extends StatelessWidget {
                           Text(
                             'You placed #${controller.personalRank ?? "?"}!',
                             style: const TextStyle(
-                              color: PawTheme.goldStar,
+                              color: PupTheme.goldStar,
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
@@ -85,13 +85,13 @@ class GameOverResultScreen extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final r = controller.rankings[index];
                           final character =
-                              PawCharacter.fromName(r['character'] ?? '');
+                              PupCharacter.fromName(r['character'] ?? '');
                           return ListTile(
                             leading: Text(
                               '#${r['rank']}',
                               style: TextStyle(
                                 color: index == 0
-                                    ? PawTheme.goldStar
+                                    ? PupTheme.goldStar
                                     : Colors.white,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

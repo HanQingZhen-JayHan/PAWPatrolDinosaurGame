@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'package:paw_patrol_runner/models/message.dart';
+import 'package:pup_dash/models/message.dart';
 
 typedef ClientMessageHandler = void Function(GameMessage message);
 

@@ -3,20 +3,20 @@ import 'package:flame/game.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show KeyEventResult;
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
-import 'package:paw_patrol_runner/game/components/ground.dart';
-import 'package:paw_patrol_runner/game/components/heart_indicator.dart';
-import 'package:paw_patrol_runner/game/components/obstacle_component.dart';
-import 'package:paw_patrol_runner/game/components/parallax_background.dart';
-import 'package:paw_patrol_runner/game/components/player_component.dart';
-import 'package:paw_patrol_runner/game/components/score_indicator.dart';
-import 'package:paw_patrol_runner/game/managers/obstacle_manager.dart';
-import 'package:paw_patrol_runner/game/managers/score_manager.dart';
-import 'package:paw_patrol_runner/game/systems/difficulty_system.dart';
-import 'package:paw_patrol_runner/models/message.dart';
-import 'package:paw_patrol_runner/providers/game_provider.dart';
+import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/game/components/ground.dart';
+import 'package:pup_dash/game/components/heart_indicator.dart';
+import 'package:pup_dash/game/components/obstacle_component.dart';
+import 'package:pup_dash/game/components/parallax_background.dart';
+import 'package:pup_dash/game/components/player_component.dart';
+import 'package:pup_dash/game/components/score_indicator.dart';
+import 'package:pup_dash/game/managers/obstacle_manager.dart';
+import 'package:pup_dash/game/managers/score_manager.dart';
+import 'package:pup_dash/game/systems/difficulty_system.dart';
+import 'package:pup_dash/models/message.dart';
+import 'package:pup_dash/providers/game_provider.dart';
 
-class PawPatrolGame extends FlameGame
+class PupDashGame extends FlameGame
     with HasCollisionDetection, KeyboardEvents {
   final GameProvider gameProvider;
 
@@ -32,7 +32,7 @@ class PawPatrolGame extends FlameGame
 
   bool _gameRunning = false;
 
-  PawPatrolGame({required this.gameProvider});
+  PupDashGame({required this.gameProvider});
 
   @override
   Future<void> onLoad() async {

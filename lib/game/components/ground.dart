@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import 'package:paw_patrol_runner/constants/game_constants.dart';
+import 'package:pup_dash/constants/game_constants.dart';
 
 /// Scrolling ground component — draws a colored rectangle that tiles and scrolls.
 class Ground extends PositionComponent with HasGameReference {

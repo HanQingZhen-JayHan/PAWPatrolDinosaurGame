@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, TextDirection, FontWeight;
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/models/player.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/models/player.dart';
 
 /// Flame-rendered game over podium overlay.
 class GameOverOverlayComponent extends PositionComponent
@@ -29,14 +29,14 @@ class GameOverOverlayComponent extends PositionComponent
 
     // Title
     _drawText(canvas, 'GAME OVER', size.x / 2, 40,
-        fontSize: 48, color: PawTheme.goldStar);
+        fontSize: 48, color: PupTheme.goldStar);
 
     // Podium
     if (rankings.isEmpty) return;
 
     final podiumY = size.y * 0.35;
     final podiumHeights = [120.0, 80.0, 60.0];
-    final podiumColors = [PawTheme.goldStar, const Color(0xFFC0C0C0), const Color(0xFFCD7F32)];
+    final podiumColors = [PupTheme.goldStar, const Color(0xFFC0C0C0), const Color(0xFFCD7F32)];
     final podiumOrder = [1, 0, 2]; // 2nd, 1st, 3rd positions left to right
 
     for (var i = 0; i < podiumOrder.length && podiumOrder[i] < rankings.length; i++) {

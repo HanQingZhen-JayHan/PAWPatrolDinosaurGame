@@ -1,6 +1,6 @@
 {
-    "name": "paw_patrol_runner",
-    "short_name": "paw_patrol_runner",
+    "name": "pup_dash",
+    "short_name": "pup_dash",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

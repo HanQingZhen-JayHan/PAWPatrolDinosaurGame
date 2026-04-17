@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum PawCharacter {
+enum PupCharacter {
   chase('Chase', Colors.blue, '🐕'),
   marshall('Marshall', Colors.red, '🐾'),
   skye('Skye', Colors.pink, '🐩'),
@@ -10,7 +10,7 @@ enum PawCharacter {
   everest('Everest', Colors.purple, '❄️'),
   tracker('Tracker', Colors.brown, '🌴');
 
-  const PawCharacter(this.displayName, this.color, this.emoji);
+  const PupCharacter(this.displayName, this.color, this.emoji);
 
   final String displayName;
   final Color color;
@@ -22,9 +22,9 @@ enum PawCharacter {
   String get jumpAsset => 'assets/images/characters/${name}_jump.png';
   String get duckAsset => 'assets/images/characters/${name}_duck.png';
 
-  static PawCharacter? fromName(String name) {
+  static PupCharacter? fromName(String name) {
     try {
-      return PawCharacter.values.firstWhere((c) => c.name == name);
+      return PupCharacter.values.firstWhere((c) => c.name == name);
     } catch (_) {
       return null;
     }

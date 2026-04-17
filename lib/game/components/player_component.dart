@@ -4,16 +4,16 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/painting.dart' show TextPainter, TextSpan, TextStyle, TextDirection;
 
-import 'package:paw_patrol_runner/constants/characters.dart';
-import 'package:paw_patrol_runner/constants/game_constants.dart';
-import 'package:paw_patrol_runner/models/message.dart';
+import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/models/message.dart';
 
 enum PlayerAnimState { running, jumping, ducking }
 
 class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference {
   final String playerId;
-  final PawCharacter character;
+  final PupCharacter character;
   final int laneIndex;
 
   PlayerAnimState _animState = PlayerAnimState.running;

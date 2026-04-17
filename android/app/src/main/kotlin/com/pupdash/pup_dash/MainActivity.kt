@@ -1,4 +1,4 @@
-package com.pawpatrol.paw_patrol_runner
+package com.pupdash.pup_dash
 
 import io.flutter.embedding.android.FlutterActivity
 

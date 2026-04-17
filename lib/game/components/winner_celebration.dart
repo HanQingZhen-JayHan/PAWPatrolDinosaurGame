@@ -3,7 +3,7 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
+import 'package:pup_dash/constants/theme.dart';
 
 /// Particle-based celebration effect for the winner.
 class WinnerCelebration extends PositionComponent with HasGameReference {
@@ -22,9 +22,9 @@ class WinnerCelebration extends PositionComponent with HasGameReference {
         vx: (_random.nextDouble() - 0.5) * 100,
         vy: _random.nextDouble() * 200 + 50,
         color: [
-          PawTheme.goldStar,
-          PawTheme.primaryBlue,
-          PawTheme.primaryRed,
+          PupTheme.goldStar,
+          PupTheme.primaryBlue,
+          PupTheme.primaryRed,
           const Color(0xFF00FF88),
           const Color(0xFFFF69B4),
         ][_random.nextInt(5)],

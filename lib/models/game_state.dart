@@ -1,4 +1,4 @@
-import 'package:paw_patrol_runner/models/player.dart';
+import 'package:pup_dash/models/player.dart';
 
 enum GamePhase { lobby, countdown, playing, gameOver }
 

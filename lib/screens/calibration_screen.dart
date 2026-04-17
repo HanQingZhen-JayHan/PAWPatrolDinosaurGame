@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/sensor/motion_calibrator.dart';
-import 'package:paw_patrol_runner/screens/controller_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/sensor/motion_calibrator.dart';
+import 'package:pup_dash/screens/controller_screen.dart';
 
 class CalibrationScreen extends StatefulWidget {
   const CalibrationScreen({super.key});
@@ -67,7 +67,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Center(
@@ -76,7 +76,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(_instructionIcon, size: 80, color: PawTheme.goldStar),
+                Icon(_instructionIcon, size: 80, color: PupTheme.goldStar),
                 const SizedBox(height: 24),
                 Text(
                   _instructionText,
@@ -92,7 +92,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                   LinearProgressIndicator(
                     value: _progress,
                     backgroundColor: Colors.white24,
-                    color: PawTheme.goldStar,
+                    color: PupTheme.goldStar,
                     minHeight: 12,
                     borderRadius: BorderRadius.circular(6),
                   ),
@@ -101,7 +101,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                   ElevatedButton(
                     onPressed: _startCalibration,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: PawTheme.primaryRed,
+                      backgroundColor: PupTheme.primaryRed,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 48, vertical: 16),
                     ),

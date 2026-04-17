@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class PawTheme {
-  PawTheme._();
+class PupTheme {
+  PupTheme._();
 
   static const Color primaryBlue = Color(0xFF1E88E5);
   static const Color primaryRed = Color(0xFFE53935);

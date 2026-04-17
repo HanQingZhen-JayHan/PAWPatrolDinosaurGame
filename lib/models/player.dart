@@ -1,12 +1,12 @@
-import 'package:paw_patrol_runner/constants/characters.dart';
-import 'package:paw_patrol_runner/constants/game_constants.dart';
+import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/game_constants.dart';
 
 enum PlayerState { alive, invincible, eliminated }
 
 class PlayerData {
   final String id;
   String name;
-  PawCharacter? character;
+  PupCharacter? character;
   double score;
   int lives;
   PlayerState state;
@@ -65,7 +65,7 @@ class PlayerData {
         id: json['id'] as String,
         name: json['name'] as String? ?? '',
         character: json['character'] != null
-            ? PawCharacter.fromName(json['character'] as String)
+            ? PupCharacter.fromName(json['character'] as String)
             : null,
         score: (json['score'] as num?)?.toDouble() ?? 0,
         lives: json['lives'] as int? ?? GameConstants.maxLives,

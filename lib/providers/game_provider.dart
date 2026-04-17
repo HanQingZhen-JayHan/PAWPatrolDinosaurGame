@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:paw_patrol_runner/constants/characters.dart';
-import 'package:paw_patrol_runner/constants/game_constants.dart';
-import 'package:paw_patrol_runner/models/game_state.dart';
-import 'package:paw_patrol_runner/models/message.dart';
-import 'package:paw_patrol_runner/models/player.dart';
-import 'package:paw_patrol_runner/network/game_server.dart';
-import 'package:paw_patrol_runner/network/network_utils.dart';
+import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/models/game_state.dart';
+import 'package:pup_dash/models/message.dart';
+import 'package:pup_dash/models/player.dart';
+import 'package:pup_dash/network/game_server.dart';
+import 'package:pup_dash/network/network_utils.dart';
 
 /// Host-side provider: manages server, game state, and Flame bridge.
 class GameProvider extends ChangeNotifier {
@@ -111,7 +111,7 @@ class GameProvider extends ChangeNotifier {
     final playerId = _clientToPlayer[clientId];
     if (playerId == null) return;
 
-    final character = PawCharacter.fromName(characterName);
+    final character = PupCharacter.fromName(characterName);
     if (character == null) return;
 
     // Check if character is already taken

@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/screens/controller_join_screen.dart';
-import 'package:paw_patrol_runner/screens/host_lobby_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/screens/controller_join_screen.dart';
+import 'package:pup_dash/screens/host_lobby_screen.dart';
 
 class ModeSelectScreen extends StatelessWidget {
   const ModeSelectScreen({super.key});
@@ -19,17 +19,17 @@ class ModeSelectScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.pets, size: 64, color: PawTheme.goldStar),
+              Icon(Icons.pets, size: 64, color: PupTheme.goldStar),
               const SizedBox(height: 16),
               Text(
-                'PAW PATROL RUNNER',
+                'PUP DASH',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -41,7 +41,7 @@ class ModeSelectScreen extends StatelessWidget {
                   icon: Icons.tv,
                   label: 'HOST GAME',
                   subtitle: 'Show game on big screen',
-                  color: PawTheme.primaryBlue,
+                  color: PupTheme.primaryBlue,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const HostLobbyScreen()),
                   ),
@@ -51,7 +51,7 @@ class ModeSelectScreen extends StatelessWidget {
                 icon: Icons.phone_android,
                 label: 'JOIN GAME',
                 subtitle: 'Use phone as controller',
-                color: PawTheme.primaryRed,
+                color: PupTheme.primaryRed,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                       builder: (_) => const ControllerJoinScreen()),

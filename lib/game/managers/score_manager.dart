@@ -1,4 +1,4 @@
-import 'package:paw_patrol_runner/constants/game_constants.dart';
+import 'package:pup_dash/constants/game_constants.dart';
 
 class ScoreManager {
   final Map<String, double> _scores = {};

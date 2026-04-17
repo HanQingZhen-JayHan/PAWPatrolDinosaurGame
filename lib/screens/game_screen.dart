@@ -2,11 +2,11 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/game/paw_patrol_game.dart';
-import 'package:paw_patrol_runner/models/game_state.dart';
-import 'package:paw_patrol_runner/providers/game_provider.dart';
-import 'package:paw_patrol_runner/screens/host_lobby_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/game/pup_dash_game.dart';
+import 'package:pup_dash/models/game_state.dart';
+import 'package:pup_dash/providers/game_provider.dart';
+import 'package:pup_dash/screens/host_lobby_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -16,13 +16,13 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late final PawPatrolGame _game;
+  late final PupDashGame _game;
 
   @override
   void initState() {
     super.initState();
     final provider = context.read<GameProvider>();
-    _game = PawPatrolGame(gameProvider: provider);
+    _game = PupDashGame(gameProvider: provider);
 
     provider.onPhaseChanged = (phase) {
       if (phase == GamePhase.lobby && mounted) {
@@ -76,7 +76,7 @@ class _CountdownOverlay extends StatelessWidget {
         child: Text(
           value > 0 ? '$value' : 'GO!',
           style: const TextStyle(
-            color: PawTheme.goldStar,
+            color: PupTheme.goldStar,
             fontSize: 120,
             fontWeight: FontWeight.bold,
           ),
@@ -106,7 +106,7 @@ class _GameOverOverlay extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.emoji_events,
-                  size: 80, color: PawTheme.goldStar),
+                  size: 80, color: PupTheme.goldStar),
               const SizedBox(height: 16),
               const Text(
                 'GAME OVER',
@@ -137,7 +137,7 @@ class _GameOverOverlay extends StatelessWidget {
                         '#${index + 1}',
                         style: TextStyle(
                           color: index == 0
-                              ? PawTheme.goldStar
+                              ? PupTheme.goldStar
                               : Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -200,7 +200,7 @@ class _PodiumRow extends StatelessWidget {
       children: spots.map((i) {
         final player = rankings[i];
         final heights = [120.0, 80.0, 60.0];
-        final colors = [PawTheme.goldStar, Colors.grey, Colors.brown];
+        final colors = [PupTheme.goldStar, Colors.grey, Colors.brown];
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Column(

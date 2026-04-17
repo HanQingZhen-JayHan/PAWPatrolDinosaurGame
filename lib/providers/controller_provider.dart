@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:paw_patrol_runner/constants/characters.dart';
-import 'package:paw_patrol_runner/models/message.dart';
-import 'package:paw_patrol_runner/network/game_client.dart';
-import 'package:paw_patrol_runner/providers/network_provider.dart';
+import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/models/message.dart';
+import 'package:pup_dash/network/game_client.dart';
+import 'package:pup_dash/providers/network_provider.dart';
 
 /// Controller-side provider: manages client connection and local state.
 class ControllerProvider extends ChangeNotifier {
@@ -13,7 +13,7 @@ class ControllerProvider extends ChangeNotifier {
   final NetworkProvider networkProvider;
 
   String? _playerId;
-  PawCharacter? _selectedCharacter;
+  PupCharacter? _selectedCharacter;
   bool _isReady = false;
   int? _personalRank;
   double _personalScore = 0;
@@ -26,7 +26,7 @@ class ControllerProvider extends ChangeNotifier {
   int _countdown = 0;
 
   String? get playerId => _playerId;
-  PawCharacter? get selectedCharacter => _selectedCharacter;
+  PupCharacter? get selectedCharacter => _selectedCharacter;
   bool get isReady => _isReady;
   int? get personalRank => _personalRank;
   double get personalScore => _personalScore;
@@ -65,7 +65,7 @@ class ControllerProvider extends ChangeNotifier {
     _client.send(GameMessage.join(playerName));
   }
 
-  void selectCharacter(PawCharacter character) {
+  void selectCharacter(PupCharacter character) {
     _client.send(GameMessage.selectCharacter(character.name));
   }
 
@@ -96,7 +96,7 @@ class ControllerProvider extends ChangeNotifier {
       case MessageType.characterConfirmed:
         final name = message.payload['character'] as String?;
         if (name != null) {
-          _selectedCharacter = PawCharacter.fromName(name);
+          _selectedCharacter = PupCharacter.fromName(name);
         }
         notifyListeners();
 

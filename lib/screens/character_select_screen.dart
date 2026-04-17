@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/constants/characters.dart';
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/providers/controller_provider.dart';
-import 'package:paw_patrol_runner/screens/calibration_screen.dart';
+import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/providers/controller_provider.dart';
+import 'package:pup_dash/screens/calibration_screen.dart';
 
 class CharacterSelectScreen extends StatelessWidget {
   const CharacterSelectScreen({super.key});
@@ -14,7 +14,7 @@ class CharacterSelectScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Choose Your Pup!'),
-        backgroundColor: PawTheme.primaryBlue,
+        backgroundColor: PupTheme.primaryBlue,
         foregroundColor: Colors.white,
       ),
       body: Container(
@@ -22,7 +22,7 @@ class CharacterSelectScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Consumer<ControllerProvider>(
@@ -43,9 +43,9 @@ class CharacterSelectScreen extends StatelessWidget {
                   crossAxisSpacing: 12,
                   childAspectRatio: 0.85,
                 ),
-                itemCount: PawCharacter.values.length,
+                itemCount: PupCharacter.values.length,
                 itemBuilder: (context, index) {
-                  final character = PawCharacter.values[index];
+                  final character = PupCharacter.values[index];
                   final isTaken = takenCharacters.contains(character.name);
                   final isSelected =
                       controller.selectedCharacter == character;
@@ -66,12 +66,12 @@ class CharacterSelectScreen extends StatelessWidget {
                                 : character.color.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(16),
                         border: isSelected
-                            ? Border.all(color: PawTheme.goldStar, width: 4)
+                            ? Border.all(color: PupTheme.goldStar, width: 4)
                             : null,
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: PawTheme.goldStar
+                                  color: PupTheme.goldStar
                                       .withValues(alpha: 0.5),
                                   blurRadius: 12,
                                   spreadRadius: 2,
@@ -114,7 +114,7 @@ class CharacterSelectScreen extends StatelessWidget {
       bottomNavigationBar: Consumer<ControllerProvider>(
         builder: (context, controller, _) {
           return Container(
-            color: PawTheme.backgroundDark,
+            color: PupTheme.backgroundDark,
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
               onPressed: controller.selectedCharacter != null
@@ -126,8 +126,8 @@ class CharacterSelectScreen extends StatelessWidget {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: PawTheme.goldStar,
-                foregroundColor: PawTheme.backgroundDark,
+                backgroundColor: PupTheme.goldStar,
+                foregroundColor: PupTheme.backgroundDark,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               child: const Text('NEXT',

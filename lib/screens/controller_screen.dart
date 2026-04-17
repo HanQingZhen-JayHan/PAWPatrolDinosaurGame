@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:paw_patrol_runner/constants/theme.dart';
-import 'package:paw_patrol_runner/models/message.dart';
-import 'package:paw_patrol_runner/providers/controller_provider.dart';
-import 'package:paw_patrol_runner/sensor/motion_calibrator.dart';
-import 'package:paw_patrol_runner/sensor/motion_detector.dart';
-import 'package:paw_patrol_runner/screens/game_over_result_screen.dart';
+import 'package:pup_dash/constants/theme.dart';
+import 'package:pup_dash/models/message.dart';
+import 'package:pup_dash/providers/controller_provider.dart';
+import 'package:pup_dash/sensor/motion_calibrator.dart';
+import 'package:pup_dash/sensor/motion_detector.dart';
+import 'package:pup_dash/screens/game_over_result_screen.dart';
 
 class ControllerScreen extends StatefulWidget {
   final CalibrationResult calibration;
@@ -56,7 +56,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [PawTheme.backgroundLight, PawTheme.backgroundDark],
+            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
           ),
         ),
         child: Consumer<ControllerProvider>(
@@ -101,7 +101,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                                 (i) => Icon(
                                   Icons.favorite,
                                   color: i < controller.livesRemaining
-                                      ? PawTheme.heartRed
+                                      ? PupTheme.heartRed
                                       : Colors.white24,
                                   size: 24,
                                 ),
@@ -194,7 +194,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                             Text(
                               '${controller.countdown}',
                               style: const TextStyle(
-                                color: PawTheme.goldStar,
+                                color: PupTheme.goldStar,
                                 fontSize: 72,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -203,7 +203,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                             ElevatedButton(
                               onPressed: controller.requestStart,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: PawTheme.primaryBlue,
+                                backgroundColor: PupTheme.primaryBlue,
                                 minimumSize:
                                     const Size(double.infinity, 56),
                               ),
@@ -216,7 +216,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                       ElevatedButton(
                         onPressed: controller.requestEnd,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: PawTheme.primaryRed,
+                          backgroundColor: PupTheme.primaryRed,
                           minimumSize: const Size(double.infinity, 56),
                         ),
                         child: const Text('END GAME',
