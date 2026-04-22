@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'package:pup_dash/app.dart';
 import 'package:pup_dash/constants/dev_config.dart';
+import 'package:pup_dash/constants/music_config.dart';
 import 'package:pup_dash/firebase_options.dart';
 import 'package:pup_dash/providers/controller_provider.dart';
 import 'package:pup_dash/providers/game_provider.dart';
@@ -18,8 +19,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Load persisted dev-mode flag before any UI reads it
+  // Load persisted flags before any UI reads them
   await DevConfig.load();
+  await MusicConfig.load();
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,

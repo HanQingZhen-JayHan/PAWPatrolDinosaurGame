@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:pup_dash/constants/game_constants.dart';
+import 'package:pup_dash/constants/music_config.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/game/pup_dash_game.dart';
 import 'package:pup_dash/models/game_state.dart';
@@ -40,17 +41,21 @@ class _GameScreenState extends State<GameScreen> {
     provider.onPhaseChanged = (phase) {
       // Stay on game screen — Play Again resets state without leaving room
       if (mounted) setState(() {});
-      _syncMusicTo(phase);
+      _syncMusic();
     };
 
+    // React to user toggling the music button mid-game.
+    MusicConfig.notifier.addListener(_syncMusic);
+
     // Starting phase might already be countdown/playing when screen mounts.
-    _syncMusicTo(provider.state.phase);
+    _syncMusic();
   }
 
-  void _syncMusicTo(GamePhase phase) {
+  void _syncMusic() {
     if (!kIsWeb) return;
-    final shouldPlay =
-        phase == GamePhase.countdown || phase == GamePhase.playing;
+    final phase = context.read<GameProvider>().state.phase;
+    final shouldPlay = MusicConfig.enabled &&
+        (phase == GamePhase.countdown || phase == GamePhase.playing);
     if (shouldPlay && !_musicPlaying) {
       try {
         _jsStartBackgroundMusic();
@@ -66,6 +71,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
+    MusicConfig.notifier.removeListener(_syncMusic);
     if (kIsWeb && _musicPlaying) {
       try {
         _jsStopBackgroundMusic();
