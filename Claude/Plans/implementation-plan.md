@@ -94,7 +94,8 @@ lib/
 ├── constants/
 │   ├── game_constants.dart           # Speeds, gravity, dimensions
 │   ├── characters.dart               # PawCharacter enum + metadata
-│   └── theme.dart                    # Child-friendly PAW Patrol theme
+│   ├── theme.dart                    # Child-friendly PAW Patrol theme
+│   └── dev_config.dart               # Develop mode flags + easy-level tuning
 ├── models/
 │   ├── player.dart                   # PlayerData: id, character, score, lives
 │   ├── obstacle.dart                 # Obstacle type enum + dimensions
@@ -248,12 +249,87 @@ Splash → Mode Select
 
 ---
 
+## Develop Mode
+
+A toggle for developers/testers to iterate faster without restarting sessions or chasing gameplay loops. Configured via `lib/constants/dev_config.dart` with a single `DevConfig.enabled` flag.
+
+### How to Enable
+- **Runtime toggle**: secret gesture on host splash screen (e.g., tap PAW Patrol logo 5 times) opens the Dev panel
+- **Build flag**: `--dart-define=DEV_MODE=true` at build time for CI/automated tests
+- **Persisted setting**: `SharedPreferences` stores the last choice so dev sessions survive restarts
+- A visible **"DEV MODE"** red banner is always shown across the top of host and controller screens when enabled (so it's never left on by accident in a real game)
+
+### Develop Mode Behaviors
+
+**1. Fixed Room / Connection (no shuffling):**
+- **Fixed port**: Server always binds to `8080` (production uses dynamic port)
+- **Fixed room code / session ID**: Always `"DEV-ROOM"` instead of generated UUID
+- **Stable WebSocket URL**: `ws://<localIp>:8080/ws` — doesn't change between restarts
+- **QR code stays valid** across host restarts, so you don't have to rescan on every test cycle
+- **Predictable player IDs**: first connection = `dev-p1`, second = `dev-p2`, etc. (instead of UUIDs) — easier log reading
+
+**2. Game Never Ends:**
+- Players cannot be eliminated (hits are detected and logged but lives don't drop below 1)
+- Collisions still flash invincibility so visual feedback works
+- Auto-end rule (`≤1 player alive`) is disabled
+- `request_end` from controllers still works (manual stop remains available)
+- Score continues to accumulate for testing ranking/podium display
+
+**3. Easy Level (frozen difficulty for logic testing):**
+- `gameSpeed` locked at **200 px/s** (vs normal 300→800 progression)
+- `spawnInterval` locked at **3.0 s** (vs normal 2.5→0.8 shrinking)
+- Air obstacles (birds) disabled — only ground obstacles spawn
+- Difficulty progression system paused — no speed ramp, no harder patterns
+- Obstacle variety limited to cones only (most predictable shape/hitbox)
+
+**4. Extra Developer Affordances:**
+- **Keyboard shortcuts on host** (in addition to controllers):
+  - `Space` = jump for player 1, `Down` = duck for player 1
+  - `1-8` = simulate hit on player N
+  - `K` = kill player 1 (forces elimination despite immortality, to test game_over flow)
+  - `R` = force reset to lobby
+  - `T` = trigger game_over with current scores (test podium)
+- **Dummy bots**: `B` on host spawns a bot player that randomly jumps (avoids needing multiple phones)
+- **Verbose logging**: all WebSocket messages logged to console with timestamps
+- **Debug overlay**: shows FPS, player count, active obstacles, gameSpeed, elapsed time
+
+### Implementation Sketch (`dev_config.dart`)
+```dart
+class DevConfig {
+  static bool enabled = bool.fromEnvironment('DEV_MODE', defaultValue: false);
+  
+  // Fixed connection
+  static const int fixedPort = 8080;
+  static const String fixedRoomCode = 'DEV-ROOM';
+  
+  // Easy level
+  static const double easyGameSpeed = 200.0;
+  static const double easySpawnInterval = 3.0;
+  static const bool disableAirObstacles = true;
+  
+  // Immortality
+  static const bool disableElimination = true;
+  static const bool disableAutoEnd = true;
+  
+  // Debug
+  static const bool verboseLogging = true;
+  static const bool showDebugOverlay = true;
+  static const bool enableKeyboardShortcuts = true;
+  static const bool enableBots = true;
+}
+```
+
+Production code checks `DevConfig.enabled` at decision points (port binding, difficulty updates, elimination checks) rather than changing code paths — keeps the dev/prod divergence minimal and auditable.
+
+---
+
 ## Implementation Phases
 
 ### Phase 1: Project Setup & Models
 - `flutter create` project, configure `pubspec.yaml` with all dependencies
 - Implement all model classes (PawCharacter, PlayerData, GameStateModel, GameMessage)
-- Create constants (game_constants.dart, characters.dart, theme.dart)
+- Create constants (game_constants.dart, characters.dart, theme.dart, dev_config.dart)
+- Set up DevConfig flag infrastructure from day one (gates all dev-mode behaviors)
 - Unit tests for model serialization
 
 ### Phase 2: Networking Layer
@@ -363,6 +439,21 @@ Note: PAW Patrol is copyrighted. For personal use, create original cartoon-puppy
 - "Play Again" returns to lobby correctly
 - Phone disconnect handled gracefully
 - 4+ players simultaneously without lag
+
+### Develop Mode Testing Checklist
+- Toggling dev mode shows red "DEV MODE" banner on host + controllers
+- Server always binds to port 8080, room code is `DEV-ROOM`
+- QR code remains valid across host restart (same URL)
+- Collisions trigger visual feedback but don't eliminate players
+- Auto-end is disabled — game keeps running with 0 players alive
+- `request_end` from controller still ends the game manually
+- Game speed stays at 200 px/s, no difficulty ramp-up
+- Only ground obstacles (cones) spawn — no birds
+- Host keyboard shortcuts work (Space, 1-8, K, R, T, B)
+- Bot player (B key) spawns and randomly jumps
+- Debug overlay shows FPS, player count, gameSpeed, elapsed time
+- WebSocket messages log to console with timestamps
+- Disabling dev mode fully reverts to production behavior
 
 ### Performance Targets
 - 60 FPS on host with 8 players
