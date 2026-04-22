@@ -76,77 +76,115 @@
 
     // Background music — synthesized via Web Audio API so no audio file is
     // shipped in the bundle. A bouncy C-major loop designed to feel playful
-    // for young kids.
+    // for young kids. Browsers block AudioContext from producing sound
+    // until there's a user gesture, so if the context starts 'suspended'
+    // we attach one-time document listeners to resume it on first tap/key.
     let _musicCtx = null;
     let _musicGain = null;
     let _musicTimer = null;
+    let _musicLoopRunning = false;
+    let _musicWaitingForGesture = false;
+
+    function _musicMelody() {
+      return [
+        [523, 0.18], [659, 0.18], [784, 0.18], [659, 0.18],
+        [523, 0.18], [659, 0.18], [784, 0.36],
+        [698, 0.18], [784, 0.18], [880, 0.36],
+        [784, 0.18], [659, 0.18], [523, 0.36],
+        [0, 0.3]
+      ];
+    }
+    function _musicBass() {
+      return [
+        [131, 0.72], [131, 0.72], [174, 0.72], [131, 0.72], [0, 0.3]
+      ];
+    }
+    function _musicPlayNote(time, freq, dur, type, targetGain) {
+      if (freq <= 0 || !_musicCtx) return;
+      const osc = _musicCtx.createOscillator();
+      const g = _musicCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0, time);
+      g.gain.linearRampToValueAtTime(targetGain, time + 0.02);
+      g.gain.linearRampToValueAtTime(0, time + dur * 0.95);
+      osc.connect(g);
+      g.connect(_musicGain);
+      osc.start(time);
+      osc.stop(time + dur);
+    }
+    function _musicLoop() {
+      if (!_musicCtx || !_musicLoopRunning) return;
+      let t = _musicCtx.currentTime + 0.05;
+      const phraseStart = t;
+      for (const [f, d] of _musicMelody()) {
+        _musicPlayNote(t, f, d, 'triangle', 1.0);
+        t += d;
+      }
+      let b = phraseStart;
+      for (const [f, d] of _musicBass()) {
+        _musicPlayNote(b, f, d, 'sine', 0.8);
+        b += d;
+      }
+      const aheadMs = Math.max(0, (t - _musicCtx.currentTime) * 1000 - 50);
+      _musicTimer = setTimeout(_musicLoop, aheadMs);
+    }
+    function _musicArmAndLoop() {
+      if (!_musicCtx) return;
+      _musicLoopRunning = true;
+      _musicLoop();
+    }
+    function _musicWaitForGesture() {
+      if (_musicWaitingForGesture) return;
+      _musicWaitingForGesture = true;
+      const resume = () => {
+        document.removeEventListener('pointerdown', resume, true);
+        document.removeEventListener('touchstart', resume, true);
+        document.removeEventListener('keydown', resume, true);
+        document.removeEventListener('click', resume, true);
+        _musicWaitingForGesture = false;
+        if (_musicCtx && _musicCtx.state === 'suspended') {
+          _musicCtx.resume().then(_musicArmAndLoop).catch(console.error);
+        } else {
+          _musicArmAndLoop();
+        }
+      };
+      document.addEventListener('pointerdown', resume, true);
+      document.addEventListener('touchstart', resume, true);
+      document.addEventListener('keydown', resume, true);
+      document.addEventListener('click', resume, true);
+    }
+
     function startBackgroundMusic() {
-      if (_musicCtx) return;
+      if (_musicLoopRunning) return;
       try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        _musicCtx = new AudioCtx();
-        _musicGain = _musicCtx.createGain();
-        _musicGain.gain.value = 0.12;
-        _musicGain.connect(_musicCtx.destination);
-
-        // Melody: bouncy repeating phrase in C major.
-        // Each entry: [frequency Hz, duration seconds]. freq = 0 means rest.
-        const melody = [
-          [523, 0.18], [659, 0.18], [784, 0.18], [659, 0.18],
-          [523, 0.18], [659, 0.18], [784, 0.36],
-          [698, 0.18], [784, 0.18], [880, 0.36],
-          [784, 0.18], [659, 0.18], [523, 0.36],
-          [0, 0.3]
-        ];
-        // Simple bass line (one note per beat group)
-        const bass = [
-          [131, 0.72], // C3
-          [131, 0.72],
-          [174, 0.72], // F3
-          [131, 0.72],
-          [0, 0.3]
-        ];
-
-        function playNote(time, freq, dur, type, targetGain) {
-          if (freq <= 0) return;
-          const osc = _musicCtx.createOscillator();
-          const g = _musicCtx.createGain();
-          osc.type = type;
-          osc.frequency.value = freq;
-          g.gain.setValueAtTime(0, time);
-          g.gain.linearRampToValueAtTime(targetGain, time + 0.02);
-          g.gain.linearRampToValueAtTime(0, time + dur * 0.95);
-          osc.connect(g);
-          g.connect(_musicGain);
-          osc.start(time);
-          osc.stop(time + dur);
+        if (!_musicCtx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return;
+          _musicCtx = new AudioCtx();
+          _musicGain = _musicCtx.createGain();
+          _musicGain.gain.value = 0.12;
+          _musicGain.connect(_musicCtx.destination);
         }
-
-        function loop() {
-          if (!_musicCtx) return;
-          let t = _musicCtx.currentTime + 0.05;
-          const phraseStart = t;
-          for (const [f, d] of melody) {
-            playNote(t, f, d, 'triangle', 1.0);
-            t += d;
-          }
-          const phraseEnd = t;
-          // Bass runs alongside melody
-          let b = phraseStart;
-          for (const [f, d] of bass) {
-            playNote(b, f, d, 'sine', 0.8);
-            b += d;
-          }
-          const aheadMs = Math.max(0, (phraseEnd - _musicCtx.currentTime) * 1000 - 50);
-          _musicTimer = setTimeout(loop, aheadMs);
+        if (_musicCtx.state === 'suspended') {
+          // Try to resume immediately — succeeds if we're already inside
+          // a user gesture. Otherwise arm a listener for the next tap.
+          _musicCtx.resume().then(() => {
+            if (_musicCtx && _musicCtx.state === 'running') {
+              _musicArmAndLoop();
+            } else {
+              _musicWaitForGesture();
+            }
+          }).catch(() => _musicWaitForGesture());
+        } else {
+          _musicArmAndLoop();
         }
-        loop();
       } catch (e) {
         console.error('Music error:', e);
       }
     }
     function stopBackgroundMusic() {
+      _musicLoopRunning = false;
       if (_musicTimer) { clearTimeout(_musicTimer); _musicTimer = null; }
       if (_musicCtx) {
         try { _musicCtx.close(); } catch (_) {}

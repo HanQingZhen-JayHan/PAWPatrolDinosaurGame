@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -36,6 +37,10 @@ class _ControllerScreenState extends State<ControllerScreen> {
   double _filteredY = 0;
   double _deviation = 0;
   bool _sensorReceiving = false;
+  // Fallback: if motion is on but no sensor events for N seconds, show
+  // touch buttons so iOS Safari/Chrome users aren't stranded.
+  bool _showTouchFallback = false;
+  Timer? _fallbackTimer;
 
   @override
   void initState() {
@@ -51,7 +56,10 @@ class _ControllerScreenState extends State<ControllerScreen> {
         _filteredY = filteredY;
         _deviation = deviation;
         _sensorReceiving = true;
+        // Sensor delivered data — hide touch fallback and cancel its timer.
+        _showTouchFallback = false;
       });
+      _fallbackTimer?.cancel();
     };
     // Auto-start: mark ready and begin motion detection as soon as the
     // controller screen mounts. Player doesn't need to click READY.
@@ -61,6 +69,14 @@ class _ControllerScreenState extends State<ControllerScreen> {
       if (!controller.isReady) controller.markReady();
       _detector.start();
       if (mounted) setState(() => _motionActive = true);
+
+      // If no sensor events arrive within a few seconds, surface big
+      // touch buttons so iOS Safari/Chrome users can still play.
+      _fallbackTimer = Timer(const Duration(seconds: 3), () {
+        if (!mounted) return;
+        if (_sensorReceiving) return;
+        setState(() => _showTouchFallback = true);
+      });
 
       // On web, request a screen wake lock so the phone doesn't dim/lock
       // during gameplay — keeps the controller responsive.
@@ -74,6 +90,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
   @override
   void dispose() {
+    _fallbackTimer?.cancel();
     _detector.dispose();
     if (kIsWeb) {
       try {
@@ -165,7 +182,9 @@ class _ControllerScreenState extends State<ControllerScreen> {
                           ? 'Get ready!'
                           : _sensorReceiving
                               ? 'Jump and crouch to play!'
-                              : 'Waiting for sensor data...',
+                              : _showTouchFallback
+                                  ? 'Tap the buttons below'
+                                  : 'Waiting for sensor data...',
                       style: TextStyle(
                         color: _motionActive && _sensorReceiving
                             ? Colors.greenAccent
@@ -240,6 +259,42 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
                     const Spacer(),
 
+                    // Touch fallback: shown only if sensor didn't deliver
+                    // any data within a few seconds after motion started.
+                    // Typical on Chrome/Safari iOS where DeviceMotion events
+                    // are blocked.
+                    if (_showTouchFallback && !_sensorReceiving)
+                      SizedBox(
+                        height: 200,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _ActionButton(
+                                label: 'JUMP',
+                                icon: Icons.arrow_upward,
+                                color: Colors.green.shade600,
+                                enabled: controller.gameActive,
+                                onTapDown: () =>
+                                    controller.sendInput('jump'),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _ActionButton(
+                                label: 'DUCK',
+                                icon: Icons.arrow_downward,
+                                color: Colors.orange.shade700,
+                                enabled: controller.gameActive,
+                                onTapDown: () =>
+                                    controller.sendInput('duck_start'),
+                                onTapUp: () =>
+                                    controller.sendInput('duck_end'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
                     // Countdown while waiting for the game to begin
                     if (controller.isReady &&
                         !controller.gameActive &&
@@ -273,6 +328,87 @@ class _ControllerScreenState extends State<ControllerScreen> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool enabled;
+  final VoidCallback onTapDown;
+  final VoidCallback? onTapUp;
+
+  const _ActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.enabled,
+    required this.onTapDown,
+    this.onTapUp,
+  });
+
+  @override
+  State<_ActionButton> createState() => _ActionButtonState();
+}
+
+class _ActionButtonState extends State<_ActionButton> {
+  bool _pressed = false;
+
+  void _handleDown() {
+    if (!widget.enabled) return;
+    setState(() => _pressed = true);
+    widget.onTapDown();
+  }
+
+  void _handleUp() {
+    if (!widget.enabled) return;
+    if (_pressed) setState(() => _pressed = false);
+    widget.onTapUp?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor =
+        widget.enabled ? widget.color : Colors.white.withValues(alpha: 0.15);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _handleDown(),
+      onTapUp: (_) => _handleUp(),
+      onTapCancel: _handleUp,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 80),
+        decoration: BoxDecoration(
+          color: _pressed ? baseColor.withValues(alpha: 0.7) : baseColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: _pressed
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    offset: const Offset(0, 4),
+                    blurRadius: 6,
+                  ),
+                ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(widget.icon, color: Colors.white, size: 72),
+            const SizedBox(height: 8),
+            Text(
+              widget.label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
         ),
       ),
     );
