@@ -89,12 +89,22 @@ class PupDashGame extends FlameGame
   }
 
   void _spawnPlayers() {
+    _syncPlayers();
+  }
+
+  /// Add a PlayerComponent for any joined player who doesn't have one yet.
+  /// Called once during onLoad and again each frame so late joiners (e.g.
+  /// Player 2 readies a beat after Player 1 and the countdown already
+  /// started) still get their character on screen.
+  void _syncPlayers() {
     final players = gameProvider.state.playerList
-        .where((p) => p.isAlive && p.character != null)
+        .where((p) => p.character != null)
         .toList();
 
     for (var i = 0; i < players.length; i++) {
       final player = players[i];
+      if (_playerComponents.containsKey(player.id)) continue;
+
       final laneOffset = _getLaneY(i, players.length);
 
       final component = PlayerComponent(
@@ -102,7 +112,6 @@ class PupDashGame extends FlameGame
         character: player.character!,
         laneIndex: i,
       );
-      // Adjust Y position based on lane
       component.position = Vector2(80 + i * 20, laneOffset);
       _playerComponents[player.id] = component;
       add(component);
@@ -143,6 +152,9 @@ class PupDashGame extends FlameGame
   void update(double dt) {
     if (!_gameRunning) return;
     super.update(dt);
+
+    // Pick up any late-joining players whose ready arrived after countdown.
+    _syncPlayers();
 
     // Only run gameplay logic while the game is in the playing phase.
     // After game over, obstacles still render (for visual continuity) but
