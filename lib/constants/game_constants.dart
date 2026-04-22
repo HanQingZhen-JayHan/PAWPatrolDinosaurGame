@@ -9,9 +9,11 @@ class GameConstants {
   // them back each frame.
   static const double jumpForwardVelocity = 300.0;
   static const double backwardDriftSpeed = 70.0;
-  // Horizontal movement bounds (fraction of screen width)
+  // Horizontal movement bounds (fraction of screen width).
+  // 1.0 lets the player jump all the way to the right edge of the screen
+  // (minus the character's own width) without going off-screen.
   static const double minPlayerX = 40.0;
-  static const double maxPlayerXFactor = 0.55;
+  static const double maxPlayerXFactor = 1.0;
   static const int maxLives = 5;
   static const double invincibilityDuration = 1.5;
   static const double blinkInterval = 0.1;
