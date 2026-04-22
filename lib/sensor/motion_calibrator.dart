@@ -62,16 +62,30 @@ class MotionCalibrator {
       onProgress?.call(_step, progress);
       if (progress >= 1.0) {
         t.cancel();
+        // If no sensor events arrived during stand-still, the browser
+        // isn't delivering accelerometer data (e.g. iOS permission
+        // denied). Finish immediately with defaults so the user reaches
+        // the controller screen instead of getting stuck on the next step.
+        if (_eventCount == 0) {
+          onSensorStalled?.call();
+          _subscription?.cancel();
+          _finish();
+          return;
+        }
         _step = CalibrationStep.practiceJumps;
         currentPeak = 0;
         onProgress?.call(_step, 0);
       }
     });
 
-    // If no sensor events arrive within 3 seconds, notify UI so the user
-    // can be prompted to skip with defaults.
-    _sensorCheckTimer = Timer(const Duration(seconds: 3), () {
-      if (_eventCount == 0) onSensorStalled?.call();
+    // Additional safety: if no sensor events arrive within 3 seconds of the
+    // practiceJumps step, also bail out with defaults.
+    _sensorCheckTimer = Timer(const Duration(seconds: 5), () {
+      if (_eventCount == 0 && _step != CalibrationStep.done) {
+        onSensorStalled?.call();
+        _subscription?.cancel();
+        _finish();
+      }
     });
 
     // Use accelerometerEvents (includes gravity) for better web compatibility
