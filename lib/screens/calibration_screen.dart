@@ -10,6 +10,9 @@ import 'package:pup_dash/screens/controller_screen.dart';
 @JS('requestMotionPermission')
 external JSPromise<JSBoolean> _jsRequestMotionPermission();
 
+@JS('isIOSNonSafari')
+external JSBoolean _jsIsIOSNonSafari();
+
 class CalibrationScreen extends StatefulWidget {
   const CalibrationScreen({super.key});
 
@@ -24,6 +27,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
   CalibrationResult? _result;
   String? _sensorError;
   bool _sensorStalled = false;
+  bool _iosChromeDetected = false;
 
   @override
   void initState() {
@@ -42,6 +46,16 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
     _calibrator.onSensorStalled = () {
       if (mounted) setState(() => _sensorStalled = true);
     };
+
+    // Flag iOS Chrome/Firefox/Edge so we can steer the user to Safari
+    // where motion-sensor access actually works.
+    if (kIsWeb) {
+      try {
+        _iosChromeDetected = _jsIsIOSNonSafari().toDart;
+      } catch (_) {
+        _iosChromeDetected = false;
+      }
+    }
   }
 
   @override
@@ -123,6 +137,23 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                       ),
                 ),
                 const SizedBox(height: 32),
+                if (_iosChromeDetected)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blueAccent, width: 1),
+                    ),
+                    child: const Text(
+                      'Best experience in Safari!\n'
+                      'Chrome on iPhone blocks motion sensors.\n'
+                      'Open this link in Safari, or use the on-screen buttons.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.lightBlueAccent, fontSize: 13),
+                    ),
+                  ),
                 if (_sensorError != null)
                   Container(
                     padding: const EdgeInsets.all(16),

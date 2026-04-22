@@ -21,20 +21,37 @@
 </head>
 <body>
   <script>
-    // Request DeviceMotion permission (required on iOS Safari)
+    // Request DeviceMotion permission (required on iOS Safari).
+    // Must be called inside a user-gesture handler — we keep the call
+    // path as short as possible so the gesture isn't lost across awaits.
     async function requestMotionPermission() {
-      if (typeof DeviceMotionEvent !== 'undefined' &&
-          typeof DeviceMotionEvent.requestPermission === 'function') {
-        try {
-          const result = await DeviceMotionEvent.requestPermission();
-          return result === 'granted';
-        } catch (e) {
-          console.error('Motion permission error:', e);
-          return false;
-        }
+      const hasReq = typeof DeviceMotionEvent !== 'undefined' &&
+          typeof DeviceMotionEvent.requestPermission === 'function';
+      if (!hasReq) {
+        console.log('[motion] requestPermission not exposed — assuming granted');
+        return true;
       }
-      // Android/desktop: no permission needed, assume available
-      return true;
+      try {
+        // Call synchronously here; the first await below is the prompt itself.
+        const result = await DeviceMotionEvent.requestPermission();
+        console.log('[motion] DeviceMotionEvent.requestPermission result:', result);
+        return result === 'granted';
+      } catch (e) {
+        console.error('[motion] permission error:', e);
+        return false;
+      }
+    }
+
+    // True when running inside Chrome / Firefox / Edge on iOS (WKWebView).
+    // Those browsers don't expose DeviceMotionEvent.requestPermission and
+    // typically can't access motion sensors at all — Safari is required.
+    function isIOSNonSafari() {
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!isIOS) return false;
+      // Chrome iOS = CriOS, Firefox = FxiOS, Edge = EdgiOS
+      return /CriOS|FxiOS|EdgiOS/.test(ua);
     }
 
     // Check if sensors are available at all
