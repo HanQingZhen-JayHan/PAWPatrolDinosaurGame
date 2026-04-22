@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/screens/controller_join_screen.dart';
 import 'package:pup_dash/screens/host_lobby_screen.dart';
+import 'package:pup_dash/widgets/dev_mode_banner.dart';
 
 class ModeSelectScreen extends StatelessWidget {
   const ModeSelectScreen({super.key});
@@ -13,47 +15,83 @@ class ModeSelectScreen extends StatelessWidget {
     const canHost = true;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
+      body: DevModeBanner(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
+            ),
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
             children: [
-              Icon(Icons.pets, size: 64, color: PupTheme.goldStar),
-              const SizedBox(height: 16),
-              Text(
-                'PUP DASH',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.pets, size: 64, color: PupTheme.goldStar),
+                    const SizedBox(height: 16),
+                    Text(
+                      'PUP DASH',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
-              ),
-              const SizedBox(height: 48),
-              if (canHost)
-                _ModeButton(
-                  icon: Icons.tv,
-                  label: 'HOST GAME',
-                  subtitle: 'Show game on big screen',
-                  color: PupTheme.primaryBlue,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HostLobbyScreen()),
-                  ),
+                    const SizedBox(height: 48),
+                    if (canHost)
+                      _ModeButton(
+                        icon: Icons.tv,
+                        label: 'HOST GAME',
+                        subtitle: 'Show game on big screen',
+                        color: PupTheme.primaryBlue,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const HostLobbyScreen()),
+                        ),
+                      ),
+                    if (canHost) const SizedBox(height: 24),
+                    _ModeButton(
+                      icon: Icons.phone_android,
+                      label: 'JOIN GAME',
+                      subtitle: 'Use phone as controller',
+                      color: PupTheme.primaryRed,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const ControllerJoinScreen()),
+                      ),
+                    ),
+                  ],
                 ),
-              if (canHost) const SizedBox(height: 24),
-              _ModeButton(
-                icon: Icons.phone_android,
-                label: 'JOIN GAME',
-                subtitle: 'Use phone as controller',
-                color: PupTheme.primaryRed,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => const ControllerJoinScreen()),
+              ),
+              // Dev mode toggle pinned bottom-right
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: SafeArea(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: DevConfig.notifier,
+                    builder: (context, enabled, _) {
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Dev Mode',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                          ),
+                          Switch(
+                            value: enabled,
+                            activeThumbColor: Colors.red.shade700,
+                            onChanged: (v) => DevConfig.enabled = v,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:firebase_database/firebase_database.dart';
 
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/models/message.dart';
 
 /// Host-side Firebase Realtime Database room manager.
@@ -23,9 +24,16 @@ class FirebaseRoomHost {
   bool get isRunning => _roomRef != null;
 
   /// Create a new room with a short join code.
+  /// In dev mode, always uses [DevConfig.fixedRoomCode] so the QR stays valid
+  /// across host restarts. Any existing room at that code is cleared first.
   Future<String> createRoom() async {
-    _roomCode = _generateRoomCode();
+    _roomCode = DevConfig.enabled ? DevConfig.fixedRoomCode : _generateRoomCode();
     _roomRef = _db.ref('rooms/$_roomCode');
+
+    if (DevConfig.enabled) {
+      // Clear any stale state from a previous dev session at the same code
+      await _roomRef!.remove();
+    }
 
     // Initialize room structure
     await _roomRef!.set({

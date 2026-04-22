@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flame/components.dart';
 
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/game/components/obstacle_component.dart';
 import 'package:pup_dash/models/obstacle.dart';
@@ -21,6 +22,10 @@ class ObstacleManager extends Component with HasGameReference {
   }
 
   void updateSpawnInterval(double elapsed) {
+    if (DevConfig.enabled) {
+      _spawnInterval = DevConfig.easySpawnInterval;
+      return;
+    }
     if (_easyMode) {
       _spawnInterval = GameConstants.easyModeSpawnInterval;
       return;

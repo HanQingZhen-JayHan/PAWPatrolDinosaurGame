@@ -1,3 +1,4 @@
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/constants/game_constants.dart';
 
 class DifficultySystem {
@@ -6,10 +7,18 @@ class DifficultySystem {
 
   double get elapsed => _elapsed;
   double get gameSpeed => _gameSpeed;
-  bool get isEasyMode => _elapsed < GameConstants.easyModeDuration;
+  // Dev mode stays in easy mode forever so obstacle variety/spawning stays
+  // simple while testing logic.
+  bool get isEasyMode =>
+      DevConfig.enabled || _elapsed < GameConstants.easyModeDuration;
 
   void update(double dt) {
     _elapsed += dt;
+
+    if (DevConfig.enabled) {
+      _gameSpeed = DevConfig.easyGameSpeed;
+      return;
+    }
 
     if (isEasyMode) {
       _gameSpeed = GameConstants.easyModeSpeed;
@@ -27,6 +36,8 @@ class DifficultySystem {
 
   void reset() {
     _elapsed = 0;
-    _gameSpeed = GameConstants.easyModeSpeed;
+    _gameSpeed = DevConfig.enabled
+        ? DevConfig.easyGameSpeed
+        : GameConstants.easyModeSpeed;
   }
 }

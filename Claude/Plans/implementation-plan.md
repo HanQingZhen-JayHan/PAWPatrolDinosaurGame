@@ -293,33 +293,19 @@ A toggle for developers/testers to iterate faster without restarting sessions or
 - **Verbose logging**: all WebSocket messages logged to console with timestamps
 - **Debug overlay**: shows FPS, player count, active obstacles, gameSpeed, elapsed time
 
-### Implementation Sketch (`dev_config.dart`)
-```dart
-class DevConfig {
-  static bool enabled = bool.fromEnvironment('DEV_MODE', defaultValue: false);
-  
-  // Fixed connection
-  static const int fixedPort = 8080;
-  static const String fixedRoomCode = 'DEV-ROOM';
-  
-  // Easy level
-  static const double easyGameSpeed = 200.0;
-  static const double easySpawnInterval = 3.0;
-  static const bool disableAirObstacles = true;
-  
-  // Immortality
-  static const bool disableElimination = true;
-  static const bool disableAutoEnd = true;
-  
-  // Debug
-  static const bool verboseLogging = true;
-  static const bool showDebugOverlay = true;
-  static const bool enableKeyboardShortcuts = true;
-  static const bool enableBots = true;
-}
-```
+### Implemented Behavior
 
-Production code checks `DevConfig.enabled` at decision points (port binding, difficulty updates, elimination checks) rather than changing code paths — keeps the dev/prod divergence minimal and auditable.
+`DevConfig` is a simple `ValueNotifier<bool>` toggle (defaults to build-time `--dart-define=DEV_MODE=true` if set). Hooked into the existing Firebase-based codebase:
+
+- **`FirebaseRoomHost.createRoom()`**: in dev mode, always uses `DevConfig.fixedRoomCode` (`"DEV1"`) and clears any stale state at that path first
+- **`GameProvider.playerHit()`**: in dev mode, tops lives back to `immortalLives` (99) when they'd hit 0, keeps player in invincibility state for visual feedback
+- **`GameProvider._checkGameEnd()`**: in dev mode, skip the `aliveCount <= 1` auto-end check — `requestEnd` from controllers still works
+- **`GameProvider._startGame()`** / `restartGame()`: start with `immortalLives` and `easyGameSpeed` when dev mode on
+- **`DifficultySystem.isEasyMode`**: returns `true` forever in dev mode, speed locked to `easyGameSpeed`
+- **`ObstacleManager.updateSpawnInterval()`**: in dev mode, locks spawn interval to `easySpawnInterval` (4.0s) and only spawns ground obstacles (inherited from easyMode branch)
+- **`DevModeBanner` widget** + **Switch toggle on `ModeSelectScreen`**: user-facing control plus visible red "DEV MODE" bar so it's never left on by accident
+
+All production behavior is preserved when the flag is off — dev-mode changes are guarded by single-line `if (DevConfig.enabled)` checks at decision points.
 
 ---
 

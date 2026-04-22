@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import 'package:pup_dash/constants/characters.dart';
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/constants/game_constants.dart';
 import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/models/message.dart';
@@ -135,13 +136,17 @@ class GameProvider extends ChangeNotifier {
 
   void _startGame() {
     _state.phase = GamePhase.playing;
-    _state.gameSpeed = GameConstants.initialSpeed;
+    _state.gameSpeed = DevConfig.enabled
+        ? DevConfig.easyGameSpeed
+        : GameConstants.initialSpeed;
     _state.elapsedTime = 0;
     for (final player in _state.playerList) {
       if (player.isReady) {
         player.state = PlayerState.alive;
         player.score = 0;
-        player.lives = GameConstants.maxLives;
+        player.lives = DevConfig.enabled
+            ? DevConfig.immortalLives
+            : GameConstants.maxLives;
       }
     }
     onPhaseChanged?.call(GamePhase.playing);
@@ -163,6 +168,12 @@ class GameProvider extends ChangeNotifier {
     final player = _state.players[playerId];
     if (player == null) return;
     player.hit();
+    // Dev mode: never eliminate — top lives back up so invincibility still
+    // triggers visually but the run continues forever.
+    if (DevConfig.enabled && !player.isAlive) {
+      player.lives = DevConfig.immortalLives;
+      player.state = PlayerState.invincible;
+    }
     if (player.isAlive) {
       _room.sendToPlayer(playerId, GameMessage.hit(player.lives));
       _room.updatePlayer(playerId, {'lives': player.lives});
@@ -180,6 +191,8 @@ class GameProvider extends ChangeNotifier {
 
   void _checkGameEnd() {
     if (_state.phase != GamePhase.playing) return;
+    // Dev mode: never auto-end. Controllers can still call requestEnd().
+    if (DevConfig.enabled) return;
     if (_state.aliveCount <= 1) _endGame();
   }
 
@@ -230,7 +243,9 @@ class GameProvider extends ChangeNotifier {
     // Reset game state but keep players ready & characters intact
     for (final player in _state.playerList) {
       player.score = 0;
-      player.lives = GameConstants.maxLives;
+      player.lives = DevConfig.enabled
+          ? DevConfig.immortalLives
+          : GameConstants.maxLives;
       player.state = PlayerState.alive;
       player.eliminatedAt = null;
       // isReady stays true — players don't need to re-ready
