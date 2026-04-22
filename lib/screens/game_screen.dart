@@ -1,4 +1,7 @@
+import 'dart:js_interop';
+
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -11,6 +14,12 @@ import 'package:pup_dash/models/player.dart';
 import 'package:pup_dash/providers/game_provider.dart';
 import 'package:pup_dash/widgets/character_icon.dart';
 
+@JS('startBackgroundMusic')
+external void _jsStartBackgroundMusic();
+
+@JS('stopBackgroundMusic')
+external void _jsStopBackgroundMusic();
+
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
@@ -20,6 +29,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late final PupDashGame _game;
+  bool _musicPlaying = false;
 
   @override
   void initState() {
@@ -30,7 +40,38 @@ class _GameScreenState extends State<GameScreen> {
     provider.onPhaseChanged = (phase) {
       // Stay on game screen — Play Again resets state without leaving room
       if (mounted) setState(() {});
+      _syncMusicTo(phase);
     };
+
+    // Starting phase might already be countdown/playing when screen mounts.
+    _syncMusicTo(provider.state.phase);
+  }
+
+  void _syncMusicTo(GamePhase phase) {
+    if (!kIsWeb) return;
+    final shouldPlay =
+        phase == GamePhase.countdown || phase == GamePhase.playing;
+    if (shouldPlay && !_musicPlaying) {
+      try {
+        _jsStartBackgroundMusic();
+        _musicPlaying = true;
+      } catch (_) {}
+    } else if (!shouldPlay && _musicPlaying) {
+      try {
+        _jsStopBackgroundMusic();
+        _musicPlaying = false;
+      } catch (_) {}
+    }
+  }
+
+  @override
+  void dispose() {
+    if (kIsWeb && _musicPlaying) {
+      try {
+        _jsStopBackgroundMusic();
+      } catch (_) {}
+    }
+    super.dispose();
   }
 
   @override

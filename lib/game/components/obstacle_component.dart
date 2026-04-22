@@ -124,5 +124,43 @@ class ObstacleComponent extends PositionComponent
           Paint()..color = const Color(0xFFFFFFFF),
         );
     }
+
+    // Collision-bounds outline — dashed red rectangle matching the hitbox so
+    // players can see exactly where it's safe vs. where they'll hit.
+    _drawDashedRect(
+      canvas,
+      Rect.fromLTWH(0, 0, size.x, size.y),
+      Paint()
+        ..color = const Color(0xFFFF2222)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+      dashLength: 6,
+      gapLength: 4,
+    );
+  }
+
+  /// Draw a dashed rectangle outline. Used to mark the collision bounds.
+  void _drawDashedRect(
+    Canvas canvas,
+    Rect rect,
+    Paint paint, {
+    double dashLength = 6,
+    double gapLength = 4,
+  }) {
+    final step = dashLength + gapLength;
+
+    // Top and bottom edges
+    for (double x = rect.left; x < rect.right; x += step) {
+      final end = (x + dashLength).clamp(rect.left, rect.right);
+      canvas.drawLine(Offset(x, rect.top), Offset(end, rect.top), paint);
+      canvas.drawLine(
+          Offset(x, rect.bottom), Offset(end, rect.bottom), paint);
+    }
+    // Left and right edges
+    for (double y = rect.top; y < rect.bottom; y += step) {
+      final end = (y + dashLength).clamp(rect.top, rect.bottom);
+      canvas.drawLine(Offset(rect.left, y), Offset(rect.left, end), paint);
+      canvas.drawLine(Offset(rect.right, y), Offset(rect.right, end), paint);
+    }
   }
 }

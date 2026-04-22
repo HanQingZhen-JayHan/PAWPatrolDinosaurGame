@@ -73,6 +73,87 @@
         }
       } catch (_) {}
     }
+
+    // Background music — synthesized via Web Audio API so no audio file is
+    // shipped in the bundle. A bouncy C-major loop designed to feel playful
+    // for young kids.
+    let _musicCtx = null;
+    let _musicGain = null;
+    let _musicTimer = null;
+    function startBackgroundMusic() {
+      if (_musicCtx) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        _musicCtx = new AudioCtx();
+        _musicGain = _musicCtx.createGain();
+        _musicGain.gain.value = 0.12;
+        _musicGain.connect(_musicCtx.destination);
+
+        // Melody: bouncy repeating phrase in C major.
+        // Each entry: [frequency Hz, duration seconds]. freq = 0 means rest.
+        const melody = [
+          [523, 0.18], [659, 0.18], [784, 0.18], [659, 0.18],
+          [523, 0.18], [659, 0.18], [784, 0.36],
+          [698, 0.18], [784, 0.18], [880, 0.36],
+          [784, 0.18], [659, 0.18], [523, 0.36],
+          [0, 0.3]
+        ];
+        // Simple bass line (one note per beat group)
+        const bass = [
+          [131, 0.72], // C3
+          [131, 0.72],
+          [174, 0.72], // F3
+          [131, 0.72],
+          [0, 0.3]
+        ];
+
+        function playNote(time, freq, dur, type, targetGain) {
+          if (freq <= 0) return;
+          const osc = _musicCtx.createOscillator();
+          const g = _musicCtx.createGain();
+          osc.type = type;
+          osc.frequency.value = freq;
+          g.gain.setValueAtTime(0, time);
+          g.gain.linearRampToValueAtTime(targetGain, time + 0.02);
+          g.gain.linearRampToValueAtTime(0, time + dur * 0.95);
+          osc.connect(g);
+          g.connect(_musicGain);
+          osc.start(time);
+          osc.stop(time + dur);
+        }
+
+        function loop() {
+          if (!_musicCtx) return;
+          let t = _musicCtx.currentTime + 0.05;
+          const phraseStart = t;
+          for (const [f, d] of melody) {
+            playNote(t, f, d, 'triangle', 1.0);
+            t += d;
+          }
+          const phraseEnd = t;
+          // Bass runs alongside melody
+          let b = phraseStart;
+          for (const [f, d] of bass) {
+            playNote(b, f, d, 'sine', 0.8);
+            b += d;
+          }
+          const aheadMs = Math.max(0, (phraseEnd - _musicCtx.currentTime) * 1000 - 50);
+          _musicTimer = setTimeout(loop, aheadMs);
+        }
+        loop();
+      } catch (e) {
+        console.error('Music error:', e);
+      }
+    }
+    function stopBackgroundMusic() {
+      if (_musicTimer) { clearTimeout(_musicTimer); _musicTimer = null; }
+      if (_musicCtx) {
+        try { _musicCtx.close(); } catch (_) {}
+        _musicCtx = null;
+        _musicGain = null;
+      }
+    }
   </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
