@@ -23,6 +23,7 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
   double _progress = 0;
   CalibrationResult? _result;
   String? _sensorError;
+  bool _sensorStalled = false;
 
   @override
   void initState() {
@@ -37,6 +38,9 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
     };
     _calibrator.onComplete = (result) {
       if (mounted) setState(() => _result = result);
+    };
+    _calibrator.onSensorStalled = () {
+      if (mounted) setState(() => _sensorStalled = true);
     };
   }
 
@@ -56,7 +60,10 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
         return;
       }
     }
-    setState(() => _sensorError = null);
+    setState(() {
+      _sensorError = null;
+      _sensorStalled = false;
+    });
     _calibrator.startCalibration();
   }
 
@@ -127,6 +134,23 @@ class _CalibrationScreenState extends State<CalibrationScreen> {
                       _sensorError!,
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                    ),
+                  ),
+                if (_sensorStalled && _result == null)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange, width: 1),
+                    ),
+                    child: const Text(
+                      "Phone sensor isn't responding.\n"
+                      "On iPhone: allow Motion & Orientation in Safari settings, "
+                      "or tap 'Skip' below to use defaults.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.orangeAccent, fontSize: 13),
                     ),
                   ),
                 if (_step != CalibrationStep.idle &&

@@ -65,7 +65,8 @@ class ModeSelectScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              // Dev mode toggle pinned bottom-right
+              // Dev mode toggle button, bottom-right. Tapping toggles the
+              // flag; the choice is persisted and survives app restarts.
               Positioned(
                 right: 16,
                 bottom: 16,
@@ -73,22 +74,33 @@ class ModeSelectScreen extends StatelessWidget {
                   child: ValueListenableBuilder<bool>(
                     valueListenable: DevConfig.notifier,
                     builder: (context, enabled, _) {
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Dev Mode',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 12,
-                            ),
+                      return OutlinedButton.icon(
+                        onPressed: () => DevConfig.setEnabled(!enabled),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: enabled
+                              ? Colors.red.shade700
+                              : Colors.transparent,
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: enabled
+                                ? Colors.red.shade700
+                                : Colors.white.withValues(alpha: 0.4),
                           ),
-                          Switch(
-                            value: enabled,
-                            activeThumbColor: Colors.red.shade700,
-                            onChanged: (v) => DevConfig.enabled = v,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                        ),
+                        icon: Icon(
+                          enabled ? Icons.bug_report : Icons.bug_report_outlined,
+                          size: 18,
+                        ),
+                        label: Text(
+                          enabled ? 'DEV MODE: ON' : 'DEV MODE: OFF',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
                           ),
-                        ],
+                        ),
                       );
                     },
                   ),

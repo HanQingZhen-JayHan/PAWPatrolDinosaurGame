@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pup_dash/app.dart';
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/firebase_options.dart';
 import 'package:pup_dash/providers/controller_provider.dart';
 import 'package:pup_dash/providers/game_provider.dart';
@@ -16,6 +17,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Load persisted dev-mode flag before any UI reads it
+  await DevConfig.load();
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.landscapeLeft,

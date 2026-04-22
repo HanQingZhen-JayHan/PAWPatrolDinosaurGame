@@ -21,45 +21,70 @@ class CalibrationResult {
 
 class MotionCalibrator {
   StreamSubscription? _subscription;
+  Timer? _standStillTimer;
+  Timer? _sensorCheckTimer;
   CalibrationStep _step = CalibrationStep.idle;
   void Function(CalibrationStep step, double progress)? onProgress;
   void Function(CalibrationResult result)? onComplete;
+  void Function()? onSensorStalled;
 
   CalibrationStep get step => _step;
 
   final List<double> _baselineSamples = [];
   final List<double> _jumpPeaks = [];
   final List<double> _duckSamples = [];
+  int _eventCount = 0;
 
   Future<void> startCalibration() async {
     _step = CalibrationStep.standStill;
     _baselineSamples.clear();
     _jumpPeaks.clear();
     _duckSamples.clear();
+    _eventCount = 0;
 
     final startTime = DateTime.now();
     double currentPeak = 0;
+
+    // Wall-clock progress for standStill — advances even if sensor events
+    // never arrive (e.g. iOS Safari permission not granted). Samples are
+    // still collected opportunistically when events do fire.
+    const tickMs = 50;
+    _standStillTimer = Timer.periodic(Duration(milliseconds: tickMs), (t) {
+      if (_step != CalibrationStep.standStill) {
+        t.cancel();
+        return;
+      }
+      final elapsed = DateTime.now().difference(startTime).inMilliseconds;
+      final progress = min(
+        1.0,
+        elapsed / (GameConstants.calibrationStandStillSeconds * 1000),
+      );
+      onProgress?.call(_step, progress);
+      if (progress >= 1.0) {
+        t.cancel();
+        _step = CalibrationStep.practiceJumps;
+        currentPeak = 0;
+        onProgress?.call(_step, 0);
+      }
+    });
+
+    // If no sensor events arrive within 3 seconds, notify UI so the user
+    // can be prompted to skip with defaults.
+    _sensorCheckTimer = Timer(const Duration(seconds: 3), () {
+      if (_eventCount == 0) onSensorStalled?.call();
+    });
 
     // Use accelerometerEvents (includes gravity) for better web compatibility
     _subscription = accelerometerEventStream(
       samplingPeriod: Duration(
           milliseconds: GameConstants.sensorSampleIntervalMs),
     ).listen((event) {
-      final elapsed = DateTime.now().difference(startTime).inMilliseconds;
+      _eventCount++;
 
       switch (_step) {
         case CalibrationStep.standStill:
           _baselineSamples.add(event.y);
-          final progress = min(
-            1.0,
-            elapsed / (GameConstants.calibrationStandStillSeconds * 1000),
-          );
-          onProgress?.call(_step, progress);
-          if (progress >= 1.0) {
-            _step = CalibrationStep.practiceJumps;
-            currentPeak = 0;
-            onProgress?.call(_step, 0);
-          }
+          // Progress is driven by the wall-clock timer above.
           break;
 
         case CalibrationStep.practiceJumps:
@@ -105,6 +130,8 @@ class MotionCalibrator {
   }
 
   void _finish() {
+    _standStillTimer?.cancel();
+    _sensorCheckTimer?.cancel();
     final baseline = _averageBaseline;
     final avgJumpPeak = _jumpPeaks.isEmpty
         ? 3.0 // lower default for sensitivity
@@ -132,6 +159,8 @@ class MotionCalibrator {
 
   void cancel() {
     _subscription?.cancel();
+    _standStillTimer?.cancel();
+    _sensorCheckTimer?.cancel();
     _step = CalibrationStep.idle;
   }
 }
