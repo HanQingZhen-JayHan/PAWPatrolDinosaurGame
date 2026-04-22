@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import 'package:pup_dash/constants/dev_config.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/providers/game_provider.dart';
 import 'package:pup_dash/screens/game_screen.dart';
 import 'package:pup_dash/widgets/character_icon.dart';
+import 'package:pup_dash/widgets/dev_mode_banner.dart';
 
 class HostLobbyScreen extends StatefulWidget {
   const HostLobbyScreen({super.key});
@@ -37,16 +39,19 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
+      body: DevModeBanner(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [PupTheme.backgroundLight, PupTheme.backgroundDark],
+            ),
           ),
-        ),
-        child: Consumer<GameProvider>(
-          builder: (context, provider, _) {
+          child: Stack(
+            children: [
+              Consumer<GameProvider>(
+                builder: (context, provider, _) {
             if (!provider.isRunning) {
               return const Center(
                 child: Column(
@@ -212,6 +217,52 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
               ],
             );
           },
+              ),
+              // Dev mode toggle button, bottom-right. Tapping toggles the
+              // flag; the choice is persisted and survives app restarts.
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: SafeArea(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: DevConfig.notifier,
+                    builder: (context, enabled, _) {
+                      return OutlinedButton.icon(
+                        onPressed: () => DevConfig.setEnabled(!enabled),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: enabled
+                              ? Colors.red.shade700
+                              : Colors.black.withValues(alpha: 0.3),
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: enabled
+                                ? Colors.red.shade700
+                                : Colors.white.withValues(alpha: 0.4),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                        ),
+                        icon: Icon(
+                          enabled
+                              ? Icons.bug_report
+                              : Icons.bug_report_outlined,
+                          size: 18,
+                        ),
+                        label: Text(
+                          enabled ? 'DEV MODE: ON' : 'DEV MODE: OFF',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
