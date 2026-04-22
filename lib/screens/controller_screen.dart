@@ -150,33 +150,26 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Sensor status
-                    Icon(
-                      _motionActive ? Icons.sensors : Icons.sensors_off,
-                      size: 48,
-                      color: _motionActive
-                          ? (_sensorReceiving
-                              ? Colors.greenAccent
-                              : Colors.amber)
-                          : Colors.white54,
-                    ),
+                    // Input status — compact, touch-first messaging so
+                    // browsers without motion sensors (e.g. Chrome on iOS)
+                    // don't feel broken.
                     Text(
-                      _motionActive
-                          ? (_sensorReceiving
-                              ? 'Sensors active'
-                              : 'Waiting for sensor data...')
-                          : 'Tap READY to start',
-                      style: TextStyle(
-                        color: _motionActive
-                            ? Colors.greenAccent
-                            : Colors.white54,
+                      !_motionActive
+                          ? 'Get ready!'
+                          : _sensorReceiving
+                              ? 'Motion + buttons ready'
+                              : 'Use the buttons below',
+                      style: const TextStyle(
+                        color: Colors.white70,
                         fontSize: 14,
                       ),
                     ),
                     const SizedBox(height: 8),
 
-                    // Debug panel — live sensor readings
-                    if (_motionActive)
+                    // Debug panel only when sensors actually deliver data.
+                    // Hiding it on sensor-less browsers keeps the controller
+                    // screen clean and focuses attention on the buttons.
+                    if (_motionActive && _sensorReceiving)
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
