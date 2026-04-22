@@ -138,6 +138,37 @@ class _GameScreenState extends State<GameScreen> {
               return _PlayerHud(players: state.playerList);
             },
           ),
+          // Music toggle — reachable during play. Persisted across restarts.
+          Positioned(
+            right: 12,
+            bottom: 12,
+            child: SafeArea(
+              child: ValueListenableBuilder<bool>(
+                valueListenable: MusicConfig.notifier,
+                builder: (context, enabled, _) {
+                  return Material(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () => MusicConfig.setEnabled(!enabled),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Icon(
+                          enabled ? Icons.music_note : Icons.music_off,
+                          color: enabled
+                              ? PupTheme.goldStar
+                              : Colors.white70,
+                          size: 28,
+                          semanticLabel: enabled ? 'Mute music' : 'Play music',
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
           // Phase overlays (countdown, game over)
           Consumer<GameProvider>(
             builder: (context, provider, _) {

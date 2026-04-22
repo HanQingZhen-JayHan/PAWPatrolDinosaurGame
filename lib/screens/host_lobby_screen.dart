@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:pup_dash/constants/dev_config.dart';
-import 'package:pup_dash/constants/music_config.dart';
 import 'package:pup_dash/constants/theme.dart';
 import 'package:pup_dash/models/game_state.dart';
 import 'package:pup_dash/providers/game_provider.dart';
@@ -219,89 +218,47 @@ class _HostLobbyScreenState extends State<HostLobbyScreen> {
             );
           },
               ),
-              // Settings buttons, bottom-right. Each toggle is persisted.
+              // Dev mode toggle, bottom-right. Setting persists across
+              // restarts. (Music toggle lives on the game screen so it's
+              // reachable during play.)
               Positioned(
                 right: 16,
                 bottom: 16,
                 child: SafeArea(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Music on/off — enabled by default for kids.
-                      ValueListenableBuilder<bool>(
-                        valueListenable: MusicConfig.notifier,
-                        builder: (context, enabled, _) {
-                          return OutlinedButton.icon(
-                            onPressed: () =>
-                                MusicConfig.setEnabled(!enabled),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: enabled
-                                  ? PupTheme.primaryBlue
-                                  : Colors.black.withValues(alpha: 0.3),
-                              foregroundColor: Colors.white,
-                              side: BorderSide(
-                                color: enabled
-                                    ? PupTheme.primaryBlue
-                                    : Colors.white.withValues(alpha: 0.4),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
-                            ),
-                            icon: Icon(
-                              enabled
-                                  ? Icons.music_note
-                                  : Icons.music_off,
-                              size: 18,
-                            ),
-                            label: Text(
-                              enabled ? 'MUSIC: ON' : 'MUSIC: OFF',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 12),
-                      // Dev mode toggle.
-                      ValueListenableBuilder<bool>(
-                        valueListenable: DevConfig.notifier,
-                        builder: (context, enabled, _) {
-                          return OutlinedButton.icon(
-                            onPressed: () => DevConfig.setEnabled(!enabled),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: enabled
-                                  ? Colors.red.shade700
-                                  : Colors.black.withValues(alpha: 0.3),
-                              foregroundColor: Colors.white,
-                              side: BorderSide(
-                                color: enabled
-                                    ? Colors.red.shade700
-                                    : Colors.white.withValues(alpha: 0.4),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 10),
-                            ),
-                            icon: Icon(
-                              enabled
-                                  ? Icons.bug_report
-                                  : Icons.bug_report_outlined,
-                              size: 18,
-                            ),
-                            label: Text(
-                              enabled ? 'DEV MODE: ON' : 'DEV MODE: OFF',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: DevConfig.notifier,
+                    builder: (context, enabled, _) {
+                      return OutlinedButton.icon(
+                        onPressed: () => DevConfig.setEnabled(!enabled),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: enabled
+                              ? Colors.red.shade700
+                              : Colors.black.withValues(alpha: 0.3),
+                          foregroundColor: Colors.white,
+                          side: BorderSide(
+                            color: enabled
+                                ? Colors.red.shade700
+                                : Colors.white.withValues(alpha: 0.4),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                        ),
+                        icon: Icon(
+                          enabled
+                              ? Icons.bug_report
+                              : Icons.bug_report_outlined,
+                          size: 18,
+                        ),
+                        label: Text(
+                          enabled ? 'DEV MODE: ON' : 'DEV MODE: OFF',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
